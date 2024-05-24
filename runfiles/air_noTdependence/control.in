@@ -1,0 +1,66 @@
+!! This is the control file for sunset code
+
+!! Characteristic length-scale (L_char)
+1.0d0
+
+!! Characteristic velocity scale (U_char)
+0.5d0
+
+!! Start and end time (in multiples of L_char/Uchar)
+0.0d0 100.0d0
+
+!! Output period (in multiples of L_char/U_char), stats output period
+1.0d-3 1.0d-4
+
+!! Gravity vector (grav)
+0.0d0 0.0d0 0.0d0
+
+!! Inflow equivalence ratio
+1.0d0
+
+!! Reference temp (for TDTP)
+0.991075509369512d0
+
+!! Reference viscosity (at T_ref)
+1.0d-3
+
+!! Reference pressure
+285.7142857142857d0
+
+!! Prandtl number
+0.71d0
+
+!! Mixture average flag
+0
+
+!! Mach number (only used if isoT)
+0.1d0
+
+!! Temperature depedence exponent for TDTP
+0.0d0
+
+!! INFLOWS type (non-reflecting (0), hard (1), inout (2))
+1
+
+!! Inflow velocity control parameters (profile, temporal control?, Ustart,Uend,ramp-time <- all dimensionless)
+0 1.0d0 1.0d0 0.5d0
+
+!! adiabatic(0) or isothermal (1) wall boundaries
+0 1.0d3
+
+!! Initial base flow (0=zero, 1=uniform, 2=parabolic)
+1
+
+!! Flow type (1=flame,2=gaussian hotspot,3=flame file)
+2
+
+!! Flame position (x,y), dimensional thickness, and T_hot
+-0.23d0 0.0d0 4.0d-4 2.366d3
+
+!! Turbulent initial velocity field (0=no, 1=yes), dimensional length scale and dimensionless intensity
+0 2.0d-4 5.0d0
+
+!! Density stratification (0=no, 1=yes)
+0
+
+

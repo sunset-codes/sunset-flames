@@ -1,0 +1,81 @@
+!! Thermochemical transport and chemical kinetics control data
+
+!! Number of chemical species
+3
+
+!! Number of coefficients
+10
+
+!! Temperature limits
+3.0d2 5.0d3
+
+!! Gibbs reference pressure
+1.0d5
+
+!! Molar mass, Lewis number and polynomial fit of each species ------------------------------------
+!! Species 1 - H2
+2.0000d+00
+0.3d0
+! polynomial coefs 
+ 3.3512000d+00
+ 5.7187094d-04
+-1.0119157d-06
+ 1.2468205d-09
+-6.6394758d-13
+ 1.7682474d-16
+-2.3344954d-20
+ 1.2198609d-24
+-1.0162497d+03
+-3.5161494d+00
+
+!! Species 2 - O2
+3.2000d+01
+1.11d0
+! polynomial coefs 
+ 3.1818118d+00
+ 1.1351666d-03
+ 4.3312316d-07
+-1.0296515d-09
+ 6.0211723d-13
+-1.6623000d-16
+ 2.2390863d-20
+-1.1847361d-24
+-1.0026846d+03
+ 6.1765995d+00
+
+!! Species 3 - N2
+2.8000d+01
+1.0d0
+! polynomial coefs 
+ 3.4894792d+00
+-6.0553535d-04
+ 2.3465049d-06
+-1.9369826d-09
+ 7.8281037d-13
+-1.7208407d-16
+ 1.9751725d-20
+-9.2874973d-25
+-1.0313475d+03
+ 3.2435865d+00
+
+!! Data on reaction mechanism ---------------------------------------------------------------------
+!! Number of steps
+1
+
+!! Number of different third body efficiencies?
+0
+
+!! Chemical mechanism step list
+1         !! Reaction number    !! Fake reaction with zero coefficient...
+2         !! Number of reactants
+1 2.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+1         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.00d-30 0.00d0  1.0d+30   !! The three coefficients which give the rate constant
+0         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+
+

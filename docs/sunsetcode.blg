@@ -1,0 +1,68 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: sunsetcode.aux
+The style file: apsrev4-1.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: sunsetcodeNotes.bib
+Database file #2: jrckbib.bib
+control{REVTEX41Control}, control.key{N/A}, control.author{N/A}, control.editor{N/A}, control.title{N/A}, control.pages{N/A}, control.year{N/A}, control.eprint{N/A}, 
+control{apsrev41Control}, control.key{N/A}, control.author{08}, control.editor{1}, control.title{}, control.pages{0}, control.year{1}, control.eprint{N/A}, 
+Warning--jnrlst (dependency: not reversed) set 1
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+merlin.mbs apsrev4-1.bst 2010-07-25 4.21a (PWD, AO, DPC) hacked
+Control: key (0) 
+Control: author (8) initials jnrlst
+Control: editor formatted (1) identically to author
+Control: production of article title (-1) disabled
+Control: page (0) single
+Control: year (1) truncated
+Control: production of eprint (0) enabled
+Warning--missing publisher in hirschfelder_curtiss
+You've used 17 entries,
+            5847 wiz_defined-function locations,
+            1702 strings with 17415 characters,
+and the built_in function-call counts, 14245 in all, are:
+= -- 914
+> -- 328
+< -- 114
++ -- 113
+- -- 89
+* -- 2148
+:= -- 1419
+add.period$ -- 16
+call.type$ -- 17
+change.case$ -- 61
+chr.to.int$ -- 25
+cite$ -- 18
+duplicate$ -- 1387
+empty$ -- 1032
+format.name$ -- 203
+if$ -- 2743
+int.to.chr$ -- 1
+int.to.str$ -- 24
+missing$ -- 180
+newline$ -- 97
+num.names$ -- 45
+pop$ -- 601
+preamble$ -- 1
+purify$ -- 75
+quote$ -- 0
+skip$ -- 524
+stack$ -- 0
+substring$ -- 341
+swap$ -- 1254
+text.length$ -- 37
+text.prefix$ -- 0
+top$ -- 10
+type$ -- 209
+warning$ -- 2
+while$ -- 48
+width$ -- 0
+write$ -- 169
+(There were 2 warnings)

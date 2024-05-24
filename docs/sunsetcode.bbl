@@ -1,0 +1,191 @@
+%merlin.mbs apsrev4-1.bst 2010-07-25 4.21a (PWD, AO, DPC) hacked
+%Control: key (0)
+%Control: author (8) initials jnrlst
+%Control: editor formatted (1) identically to author
+%Control: production of article title (-1) disabled
+%Control: page (0) single
+%Control: year (1) truncated
+%Control: production of eprint (0) enabled
+\begin{thebibliography}{15}%
+\makeatletter
+\providecommand \@ifxundefined [1]{%
+ \@ifx{#1\undefined}
+}%
+\providecommand \@ifnum [1]{%
+ \ifnum #1\expandafter \@firstoftwo
+ \else \expandafter \@secondoftwo
+ \fi
+}%
+\providecommand \@ifx [1]{%
+ \ifx #1\expandafter \@firstoftwo
+ \else \expandafter \@secondoftwo
+ \fi
+}%
+\providecommand \natexlab [1]{#1}%
+\providecommand \enquote  [1]{``#1''}%
+\providecommand \bibnamefont  [1]{#1}%
+\providecommand \bibfnamefont [1]{#1}%
+\providecommand \citenamefont [1]{#1}%
+\providecommand \href@noop [0]{\@secondoftwo}%
+\providecommand \href [0]{\begingroup \@sanitize@url \@href}%
+\providecommand \@href[1]{\@@startlink{#1}\@@href}%
+\providecommand \@@href[1]{\endgroup#1\@@endlink}%
+\providecommand \@sanitize@url [0]{\catcode `\\12\catcode `\$12\catcode
+  `\&12\catcode `\#12\catcode `\^12\catcode `\_12\catcode `\%12\relax}%
+\providecommand \@@startlink[1]{}%
+\providecommand \@@endlink[0]{}%
+\providecommand \url  [0]{\begingroup\@sanitize@url \@url }%
+\providecommand \@url [1]{\endgroup\@href {#1}{\urlprefix }}%
+\providecommand \urlprefix  [0]{URL }%
+\providecommand \Eprint [0]{\href }%
+\providecommand \doibase [0]{http://dx.doi.org/}%
+\providecommand \selectlanguage [0]{\@gobble}%
+\providecommand \bibinfo  [0]{\@secondoftwo}%
+\providecommand \bibfield  [0]{\@secondoftwo}%
+\providecommand \translation [1]{[#1]}%
+\providecommand \BibitemOpen [0]{}%
+\providecommand \bibitemStop [0]{}%
+\providecommand \bibitemNoStop [0]{.\EOS\space}%
+\providecommand \EOS [0]{\spacefactor3000\relax}%
+\providecommand \BibitemShut  [1]{\csname bibitem#1\endcsname}%
+\let\auto@bib@innerbib\@empty
+%</preamble>
+\bibitem [{\citenamefont {King}\ \emph {et~al.}(2020)\citenamefont {King},
+  \citenamefont {Lind},\ and\ \citenamefont {Nasar}}]{king_2020}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.}~\bibnamefont
+  {King}}, \bibinfo {author} {\bibfnamefont {S.}~\bibnamefont {Lind}}, \ and\
+  \bibinfo {author} {\bibfnamefont {A.}~\bibnamefont {Nasar}},\ }\href
+  {\doibase 10.1016/j.jcp.2020.109549} {\bibfield  {journal} {\bibinfo
+  {journal} {Journal of Computational Physics}\ }\textbf {\bibinfo {volume}
+  {415}},\ \bibinfo {pages} {109549} (\bibinfo {year} {2020})}\BibitemShut
+  {NoStop}%
+\bibitem [{\citenamefont {King}\ and\ \citenamefont {Lind}(2022)}]{king_2022}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.}~\bibnamefont
+  {King}}\ and\ \bibinfo {author} {\bibfnamefont {S.}~\bibnamefont {Lind}},\
+  }\href {\doibase https://doi.org/10.1016/j.jcp.2021.110760} {\bibfield
+  {journal} {\bibinfo  {journal} {Journal of Computational Physics}\ }\textbf
+  {\bibinfo {volume} {449}},\ \bibinfo {pages} {110760} (\bibinfo {year}
+  {2022})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {King}(2024)}]{king_2024}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.}~\bibnamefont
+  {King}},\ }\href {\doibase 10.1016/j.cma.2024.116762} {\bibfield  {journal}
+  {\bibinfo  {journal} {Computer Methods in Applied Mechanics and Engineering}\
+  }\textbf {\bibinfo {volume} {421}},\ \bibinfo {pages} {116762} (\bibinfo
+  {year} {2024})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Gordon}\ and\ \citenamefont
+  {McBride}(1971)}]{gordon_1971}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {S.}~\bibnamefont
+  {Gordon}}\ and\ \bibinfo {author} {\bibfnamefont {B.~J.}\ \bibnamefont
+  {McBride}},\ }\href@noop {} {\emph {\bibinfo {title} {Computer program for
+  calculation of complex chemical equilibrium compositions, rocket per-
+  formance, incident and reflected shocks, and {C}hapman-{J}ouguet
+  detonations}}},\ \bibinfo {type} {Tech. Rep.}\ \bibinfo {number} {SP273}\
+  (\bibinfo  {institution} {NASA},\ \bibinfo {year} {1971})\BibitemShut
+  {NoStop}%
+\bibitem [{\citenamefont {Kee}\ \emph {et~al.}(1986)\citenamefont {Kee},
+  \citenamefont {Dixon-Lewis}, \citenamefont {Warnatz}, \citenamefont
+  {Coltrin},\ and\ \citenamefont {Miller}}]{kee_1986}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {R.~J.}\ \bibnamefont
+  {Kee}}, \bibinfo {author} {\bibfnamefont {G.}~\bibnamefont {Dixon-Lewis}},
+  \bibinfo {author} {\bibfnamefont {J.}~\bibnamefont {Warnatz}}, \bibinfo
+  {author} {\bibfnamefont {M.~E.}\ \bibnamefont {Coltrin}}, \ and\ \bibinfo
+  {author} {\bibfnamefont {J.~A.}\ \bibnamefont {Miller}},\ }\href@noop {}
+  {\emph {\bibinfo {title} {A Fortran computer code package for the evaluation
+  of gas-phase multicomponent transport properties}}},\ \bibinfo {type} {Tech.
+  Rep.}\ \bibinfo {number} {SAND86-8246}\ (\bibinfo  {institution} {Sandia
+  National Laboratories},\ \bibinfo {year} {1986})\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Ern}\ and\ \citenamefont
+  {Giovangigli}(1994)}]{ern_1994}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {A.}~\bibnamefont
+  {Ern}}\ and\ \bibinfo {author} {\bibfnamefont {V.}~\bibnamefont
+  {Giovangigli}},\ }\href@noop {} {\emph {\bibinfo {title} {Multicomponent
+  transport algorithms}}}\ (\bibinfo  {publisher} {Springer Science \& Business
+  Media},\ \bibinfo {year} {1994})\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Ern}\ and\ \citenamefont
+  {Giovangigli}(1995)}]{ern_1995}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {A.}~\bibnamefont
+  {Ern}}\ and\ \bibinfo {author} {\bibfnamefont {V.}~\bibnamefont
+  {Giovangigli}},\ }\href {\doibase 10.1006/jcph.1995.1151} {\bibfield
+  {journal} {\bibinfo  {journal} {Journal of Computational Physics}\ }\textbf
+  {\bibinfo {volume} {120}},\ \bibinfo {pages} {105} (\bibinfo {year}
+  {1995})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Hirschfelder}\ \emph {et~al.}(1964)\citenamefont
+  {Hirschfelder}, \citenamefont {Curtiss},\ and\ \citenamefont
+  {Bird}}]{hirschfelder_curtiss}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.~O.}\ \bibnamefont
+  {Hirschfelder}}, \bibinfo {author} {\bibfnamefont {C.~F.}\ \bibnamefont
+  {Curtiss}}, \ and\ \bibinfo {author} {\bibfnamefont {R.~B.}\ \bibnamefont
+  {Bird}},\ }\href@noop {} {\emph {\bibinfo {title} {{Molecular theory of gases
+  and liquids}}}}\ (\bibinfo {year} {1964})\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Fornberg}\ and\ \citenamefont
+  {Flyer}(2015)}]{fornberg_2015a}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {B.}~\bibnamefont
+  {Fornberg}}\ and\ \bibinfo {author} {\bibfnamefont {N.}~\bibnamefont
+  {Flyer}},\ }\href {\doibase 10.1016/j.camwa.2015.01.009} {\bibfield
+  {journal} {\bibinfo  {journal} {Computers \& Mathematics with Applications}\
+  }\textbf {\bibinfo {volume} {69}},\ \bibinfo {pages} {531 } (\bibinfo {year}
+  {2015})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Kennedy}\ \emph {et~al.}(2000)\citenamefont
+  {Kennedy}, \citenamefont {Carpenter},\ and\ \citenamefont
+  {Lewis}}]{kennedy_2000}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {C.~A.}\ \bibnamefont
+  {Kennedy}}, \bibinfo {author} {\bibfnamefont {M.~H.}\ \bibnamefont
+  {Carpenter}}, \ and\ \bibinfo {author} {\bibfnamefont {R.}~\bibnamefont
+  {Lewis}},\ }\href {\doibase 10.1016/S0168-9274(99)00141-5} {\bibfield
+  {journal} {\bibinfo  {journal} {Applied Numerical Mathematics}\ }\textbf
+  {\bibinfo {volume} {35}},\ \bibinfo {pages} {177 } (\bibinfo {year}
+  {2000})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Kennedy}\ and\ \citenamefont
+  {Carpenter}(1994)}]{kennedy_1994}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {C.~A.}\ \bibnamefont
+  {Kennedy}}\ and\ \bibinfo {author} {\bibfnamefont {M.~H.}\ \bibnamefont
+  {Carpenter}},\ }\href {\doibase 10.1016/0168-9274(94)00004-2} {\bibfield
+  {journal} {\bibinfo  {journal} {Applied Numerical Mathematics}\ }\textbf
+  {\bibinfo {volume} {14}},\ \bibinfo {pages} {397 } (\bibinfo {year}
+  {1994})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Poinsot}\ and\ \citenamefont
+  {Veynante}(2005)}]{poinsot_2005}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {T.}~\bibnamefont
+  {Poinsot}}\ and\ \bibinfo {author} {\bibfnamefont {D.}~\bibnamefont
+  {Veynante}},\ }\href@noop {} {\emph {\bibinfo {title} {Theoretical and
+  numerical combustion}}}\ (\bibinfo  {publisher} {RT Edwards, Inc.},\ \bibinfo
+  {year} {2005})\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Sutherland}\ and\ \citenamefont
+  {Kennedy}(2003)}]{sutherland_2003}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.~C.}\ \bibnamefont
+  {Sutherland}}\ and\ \bibinfo {author} {\bibfnamefont {C.~A.}\ \bibnamefont
+  {Kennedy}},\ }\href {\doibase 10.1016/S0021-9991(03)00328-0} {\bibfield
+  {journal} {\bibinfo  {journal} {Journal of Computational Physics}\ }\textbf
+  {\bibinfo {volume} {191}},\ \bibinfo {pages} {502 } (\bibinfo {year}
+  {2003})}\BibitemShut {NoStop}%
+\bibitem [{\citenamefont {Yoo}\ and\ \citenamefont {Im}(2007)}]{yoo_2007}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {C.~S.}\ \bibnamefont
+  {Yoo}}\ and\ \bibinfo {author} {\bibfnamefont {H.~G.}\ \bibnamefont {Im}},\
+  }\href {\doibase 10.1080/13647830600898995} {\bibfield  {journal} {\bibinfo
+  {journal} {Combustion Theory and Modelling}\ }\textbf {\bibinfo {volume}
+  {11}},\ \bibinfo {pages} {259} (\bibinfo {year} {2007})}\BibitemShut
+  {NoStop}%
+\bibitem [{\citenamefont {King}\ and\ \citenamefont {Lind}(2023)}]{king_2023}%
+  \BibitemOpen
+  \bibfield  {author} {\bibinfo {author} {\bibfnamefont {J.~R.~C.}\
+  \bibnamefont {King}}\ and\ \bibinfo {author} {\bibfnamefont {S.~J.}\
+  \bibnamefont {Lind}},\ }\href@noop {} {\enquote {\bibinfo {title} {A
+  mesh-free framework for high-order simulations of viscoelastic flows in
+  complex geometries},}\ } (\bibinfo {year} {2023}),\ \Eprint
+  {http://arxiv.org/abs/2312.12996} {arXiv:2312.12996 [physics.flu-dyn]}
+  \BibitemShut {NoStop}%
+\end{thebibliography}%

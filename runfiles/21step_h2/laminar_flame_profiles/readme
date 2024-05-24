@@ -1,0 +1,5 @@
+Any of these files can be copied to the main run directory and renamed "init_flame.in" for use as initial flame conditions.
+
+The filenames indicate the equivalence ratio.
+
+They are generated with the one-dimensional version of the code at atmospheric conditions and T=300K inflow.
