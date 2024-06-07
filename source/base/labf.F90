@@ -45,26 +45,14 @@ contains
 
 
      !! Set desired order::
-#if order==2
-     k=2
-#elif order==3
-     k=3
-#elif order==4
+#if order==4
      k=4
-#elif order==5
-     k=5
 #elif order==6
      k=6
-#elif order==7
-     k=7
 #elif order==8
      k=8
-#elif order==9
-     k=9
 #elif order==10
      k=10
-#elif order==12
-     k=12     
 #endif
      nsizeG=(k*k+3*k)/2   !!  5,9,14,20,27,35,44... for k=2,3,4,5,6,7,8...
      nsize_large = nsizeG
@@ -110,7 +98,8 @@ contains
 #endif    
 
            !! Populate the ABF array
-           gvec(1:nsizeG) = abfs(rad,xx,yy,ff1)
+           gvec(1:nsizeG) = abfs(rad,xx,yy)
+           gvec(1:nsizeG) = gvec(1:nsizeG)*ff1
            
            !! Populate the monomials array
            xvec(1:nsizeG) = monomials(x/hh,y/hh)
@@ -185,10 +174,7 @@ contains
         call svd_solve(amatyy,nsize,bvecyy)               
 
         !! Solve system for Hyperviscosity (regular viscosity if order<4)
-#if order<=3
-        bvechyp(:)=zero;bvechyp(3)=one;bvechyp(5)=one;i1=0;i2=0;nsize=nsizeG 
-        hyp_scal = one/hh/hh
-#elif order<=5
+#if order<=5
         bvechyp(:)=zero;bvechyp(10)=-one;bvechyp(12)=-two;bvechyp(14)=-one
         hyp_scal = one/hh/hh/hh/hh        
         i1=0;i2=0;nsize=nsizeG 
@@ -204,12 +190,7 @@ contains
         bvechyp(:)=zero;bvechyp(55)=one;bvechyp(57)=5.0d0;bvechyp(59)=10.0d0;bvechyp(61)=10.0d0
         bvechyp(63)=5.0d0;bvechyp(65)=one
         hyp_scal = one/hh/hh/hh/hh/hh/hh/hh/hh/hh/hh        
-        i1=0;i2=0;nsize=nsizeG                
-#else        
-        bvechyp(:)=zero;bvechyp(78)=-one;bvechyp(80)=-6.0d0;bvechyp(82)=-15.0d0;bvechyp(84)=-20.0d0
-        bvechyp(86)=-15.0d0;bvechyp(88)=-6.0d0;bvechyp(90)=-one
-        hyp_scal = one/hh/hh/hh/hh/hh/hh/hh/hh/hh/hh/hh/hh        
-        i1=0;i2=0;nsize=nsizeG                
+        i1=0;i2=0;nsize=nsizeG                             
 #endif
 
 
@@ -258,7 +239,9 @@ contains
            xx=x/hh/ss;yy=y/hh/ss  !! Legendre
 #endif           
            !! Populate the ABF array        
-           gvec(1:nsizeG) = abfs(rad,xx,yy,ff1)
+           gvec(1:nsizeG) = abfs(rad,xx,yy)
+           gvec(1:nsizeG) = gvec(1:nsizeG)*ff1           
+           
 
            !! Weights for gradients
            ij_w_grad(1,k,i) = dot_product(bvecx,gvec)/hh
@@ -782,18 +765,17 @@ contains
   function abfs1D(z,ff1) result(cxvec)
      real(rkind),intent(in) :: z,ff1
      real(rkind),dimension(6) :: cxvec
-     real(rkind) :: zz
 #if ABF==1
-
+     write(6,*) "WARNING NOT CODED FOR ABF=1. STOPPING"
+     stop
 
 #elif ABF==2
-     zz=oosqrt2*z
-     cxvec(1) = ff1*half*Hermite1(zz)
-     cxvec(2) = ff1*oosqrt2*Hermite2(zz)
-     cxvec(3) = ff1*half*oosqrt2*Hermite3(zz)
-     cxvec(4) = ff1*0.25d0*Hermite4(zz)
-     cxvec(5) = ff1*0.25d0*oosqrt2*Hermite5(zz)               
-     cxvec(6) = ff1*0.125d0*Hermite6(zz)          
+     cxvec(1) = ff1*Hermite1(z)
+     cxvec(2) = ff1*Hermite2(z)
+     cxvec(3) = ff1*oosqrt2*Hermite3(z)
+     cxvec(4) = ff1*Hermite4(z)
+     cxvec(5) = ff1*Hermite5(z)               
+     cxvec(6) = ff1*Hermite6(z)          
 #elif ABF==3
      cxvec(1) = ff1*Legendre1(z)
      cxvec(2) = ff1*Legendre2(z)
@@ -824,28 +806,14 @@ contains
      real(rkind) :: grad_s_mag,hfactor,radmax
      real(rkind),dimension(:),allocatable :: neighbourcountreal
  
-#if order==2
-     k=2
-#elif order==3
-     k=3
-#elif order==4
+#if order==4
      k=4
-#elif order==5
-     k=5
 #elif order==6
      k=6
-#elif order==7
-     k=7
 #elif order==8
      k=8
-#elif order==9
-     k=9
 #elif order==10
      k=10
-#elif order==11
-     k=11     
-#elif order==12
-     k=12
 #endif
      nsizeG=(k*k+3*k)/2   !!  5,9,14,20,27,35,44... for k=2,3,4,5,6,7,8...
 
@@ -872,8 +840,6 @@ contains
      res_tol = 4.0d-2*dble(nsizeG**4)*epsilon(hchecksum)/dble(k)   !! For 8th order    
 #elif order==10     
      res_tol = 1.0d+0*dble(nsizeG**4)*epsilon(hchecksum)/dble(k)   !! For 10th order
-#elif order==12
-     res_tol = 1.0d-8*dble(nsizeG**4)*epsilon(hchecksum)/dble(k)   !! For 12th order --> set so no reduction    
 #endif     
      nk = 32   !! How many wavenumbers between 1 and Nyquist to check... ! 16
      amp_tol = 1.0001d0   !! Maximum allowable amplification
@@ -928,7 +894,8 @@ contains
               xx=x/hh/ss;yy=y/hh/ss  !! Legendre   
 #endif     
               !! Populate the ABF array
-              gvec(1:nsizeG) = abfs(rad,xx,yy,ff1)
+              gvec(1:nsizeG) = abfs(rad,xx,yy)
+              gvec(1:nsizeG) = gvec(1:nsizeG)*ff1              
               
               !! Populate the monomials array
               xvec(1:nsizeG) = monomials(x/hh,y/hh)
@@ -994,7 +961,8 @@ contains
                     xx=x/hh/ss;yy=y/hh/ss  !! Legendre   
 #endif     
                     !! Populate the ABF array
-                    gvec(1:nsizeG) = abfs(rad,xx,yy,ff1)
+                    gvec(1:nsizeG) = abfs(rad,xx,yy)
+                    gvec(1:nsizeG) = gvec(1:nsizeG)*ff1                    
 
 
                     !! grad and Laplacian of signal at particular wavenumber qq
@@ -1040,9 +1008,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
 
 !hchecksum = 2.0*res_tol/hh
            !! Check the h-reduction criteria
-#if order==12
-           hchecksum = two*res_tol/hh
-#endif       
+    
 !#if order==4
 !           hchecksum = two*res_tol/hh
 !#endif    
@@ -1234,30 +1200,16 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
 !! ------------------------------------------------------------------------------------------------
   function monomials(x,y) result(cxvec)
      real(rkind),intent(in) :: x,y
-#if order==2
-     real(rkind),dimension(5) :: cxvec
-#elif order==3
-     real(rkind),dimension(9) :: cxvec
-#elif order==4
+#if order==4
      real(rkind),dimension(14) :: cxvec
-#elif order==5
-     real(rkind),dimension(20) :: cxvec
 #elif order==6
      real(rkind),dimension(27) :: cxvec
-#elif order==7
-     real(rkind),dimension(35) :: cxvec
 #elif order==8
      real(rkind),dimension(44) :: cxvec
-#elif order==9
-     real(rkind),dimension(54) :: cxvec
 #elif order==10
      real(rkind),dimension(65) :: cxvec
-#elif order==11
-     real(rkind),dimension(77) :: cxvec
-#elif order==12     
-     real(rkind),dimension(90) :: cxvec
 #endif     
-     real(rkind) :: x2,y2,x3,y3,x4,y4,x5,y5,x6,y6,x7,y7,x8,y8,x9,y9,x10,y10,x11,y11,x12,y12
+     real(rkind) :: x2,y2,x3,y3,x4,y4,x5,y5,x6,y6,x7,y7,x8,y8,x9,y9,x10,y10
  
 #if order>=2
      x2=x*x;y2=y*y
@@ -1351,68 +1303,23 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
      cxvec(64)=(one/362880.0)*x*y9
      cxvec(65)=(one/3628800.0)*y10
 #endif
-#if order>=11
-     x11=x10*x;y11=y10*y
-     cxvec(66)=(one/39916800.0)*x11
-     cxvec(67)=(one/3628800.0)*x10*y
-     cxvec(68)=(one/725760.0)*x9*y2
-     cxvec(69)=(one/241920.0)*x8*y3
-     cxvec(70)=(one/120960.0)*x7*y4
-     cxvec(71)=(one/86400.0)*x6*y5
-     cxvec(72)=(one/86400.0)*x5*y6
-     cxvec(73)=(one/120960.0)*x4*y7
-     cxvec(74)=(one/241920.0)*x3*y8
-     cxvec(75)=(one/725760.0)*x2*y9
-     cxvec(76)=(one/3628800.0)*x*y10
-     cxvec(77)=(one/39916800.0)*y11     
-#endif
-#if order>=12
-     x12=x11*x;y12=y11*y
-     cxvec(78)=(one/479001600.0)*x12
-     cxvec(79)=(one/3991680.0)*x11*y
-     cxvec(80)=(one/7257600.0)*x10*y2
-     cxvec(81)=(one/2177280.0)*x9*y3
-     cxvec(82)=(one/967680.0)*x8*y4
-     cxvec(83)=(one/604800.0)*x7*y5
-     cxvec(84)=(one/518400.0)*x6*y6
-     cxvec(85)=(one/604800.0)*x5*y7
-     cxvec(86)=(one/967680.0)*x4*y8
-     cxvec(87)=(one/2177280.0)*x3*y9
-     cxvec(88)=(one/7257600.0)*x2*y10
-     cxvec(89)=(one/3991680.0)*x*y11
-     cxvec(90)=(one/479001600.0)*y12               
-#endif
   end function monomials
 !! ------------------------------------------------------------------------------------------------
 !! ABFs generated from partial derivatives of an RBF
 !! The "original" LABFM
 !! ------------------------------------------------------------------------------------------------
 #if ABF==1
-  function abfs(dummy,x,y,ff1) result(ggvec)         !! TEN
+  function abfs(dummy,x,y) result(ggvec)         !! TEN
      real(rkind),intent(in) :: x,y,ff1,dummy
      real(rkind) :: xx,yy
-#if order==2
-     real(rkind),dimension(5) :: ggvec
-#elif order==3
-     real(rkind),dimension(9) :: ggvec
-#elif order==4
+#if order==4
      real(rkind),dimension(14) :: ggvec
-#elif order==5
-     real(rkind),dimension(20) :: ggvec
 #elif order==6
      real(rkind),dimension(27) :: ggvec
-#elif order==7
-     real(rkind),dimension(35) :: ggvec
 #elif order==8
      real(rkind),dimension(44) :: ggvec
-#elif order==9
-     real(rkind),dimension(54) :: ggvec
 #elif order==10
      real(rkind),dimension(65) :: ggvec
-#elif order==11
-     real(rkind),dimension(77) :: ggvec
-#elif order==12
-     real(rkind),dimension(90) :: ggvec
 #endif
      real(rkind) :: rad3,rad2,r15,r13,r11,r9,r7,r5
      real(rkind) :: x2,y2,x3,y3,x4,y4,x5,y5,x6,y6,x7,y7,x8,y8
@@ -1422,74 +1329,74 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
 #if order>=2
      x2=x*x;y2=y*y 
      rad2 = max(rad*rad,epsilon(rad));rad3=max(rad*rad*rad,epsilon(rad))
-     ggvec(1) = ff1*x/max(rad,epsilon(rad)) 
-     ggvec(2) = ff1*y/max(rad,epsilon(rad))
-     ggvec(3) = y2*ff1/rad3    
-     ggvec(4) = -x*y*ff1/rad3
-     ggvec(5) = x2*ff1/rad3
+     ggvec(1) = x/max(rad,epsilon(rad)) 
+     ggvec(2) = y/max(rad,epsilon(rad))
+     ggvec(3) = y2/rad3    
+     ggvec(4) = -x*y/rad3
+     ggvec(5) = x2/rad3
 #endif
 #if order>=3
      x3=x2*x;y3=y2*y
      r5 = rad3*rad2
-     ggvec(6) = -3.0*y2*x*ff1/r5                 
-     ggvec(7) = (2.0*x2*y - y3)*ff1/r5
-     ggvec(8) = (2.0*x*y2 - x3)*ff1/r5
-     ggvec(9) = -3.0*x2*y*ff1/r5
+     ggvec(6) = -3.0*y2*x/r5                 
+     ggvec(7) = (2.0*x2*y - y3)/r5
+     ggvec(8) = (2.0*x*y2 - x3)/r5
+     ggvec(9) = -3.0*x2*y/r5
 #endif
 #if order>=4
      x4=x3*x;y4=y3*y
      r7 = r5*rad2
-     ggvec(10) = (12.0*x2*y2-3.0*y4)*ff1/r7                
-     ggvec(11) = (9.0*x*y3-6.0*x3*y)*ff1/r7
-     ggvec(12) = (2.0*x4-11.0*x2*y2+2.0*y4)*ff1/r7
-     ggvec(13) = (9.0*x3*y-6.0*x*y3)*ff1/r7
-     ggvec(14) = (12.0*x2*y2-3.0*x4)*ff1/r7
+     ggvec(10) = (12.0*x2*y2-3.0*y4)/r7                
+     ggvec(11) = (9.0*x*y3-6.0*x3*y)/r7
+     ggvec(12) = (2.0*x4-11.0*x2*y2+2.0*y4)/r7
+     ggvec(13) = (9.0*x3*y-6.0*x*y3)/r7
+     ggvec(14) = (12.0*x2*y2-3.0*x4)/r7
 #endif
 #if order>=5
      x5=x4*x;y5=y4*y
      r9 = r7*rad2
-     ggvec(15) = (45.0*x*y4 - 60.0*x3*y2)*ff1/r9                    
-     ggvec(16) = (9.0*y5 - 72.0*x2*y3 + 24.0*x4*y)*ff1/r9
-     ggvec(17) = (63.0*x3*y2 - 36.0*x*y4 - 6.0*x5)*ff1/r9
-     ggvec(18) = (63.0*x2*y3 - 36.0*x4*y - 6.0*y5)*ff1/r9
-     ggvec(19) = (9.0*x5 - 72.0*x3*y2 + 24.0*x*y4)*ff1/r9
-     ggvec(20) = (45.0*x4*y - 60.0*x2*y3)*ff1/r9
+     ggvec(15) = (45.0*x*y4 - 60.0*x3*y2)/r9                    
+     ggvec(16) = (9.0*y5 - 72.0*x2*y3 + 24.0*x4*y)/r9
+     ggvec(17) = (63.0*x3*y2 - 36.0*x*y4 - 6.0*x5)/r9
+     ggvec(18) = (63.0*x2*y3 - 36.0*x4*y - 6.0*y5)/r9
+     ggvec(19) = (9.0*x5 - 72.0*x3*y2 + 24.0*x*y4)/r9
+     ggvec(20) = (45.0*x4*y - 60.0*x2*y3)/r9
 #endif
 #if order>=6
      x6=x5*x;y6=y5*y
      r11 = r9*rad2
-     ggvec(21) = (360.0*x4*y2 - 540.0*x2*y4 + 45.0*y6)*ff1/r11                  
-     ggvec(22) = (600.0*x3*y3 - 225.0*x*y5 - 120.0*x5*y)*ff1/r11
-     ggvec(23) = (477.0*x2*y4 - 408.0*x4*y2 - 36.0*y6 + 24.0*x6)*ff1/r11
-     ggvec(24) = (180.0*x*y5 - 585.0*x3*y3 + 180.0*x5*y)*ff1/r11
-     ggvec(25) = (477.0*x4*y2 - 408.0*x2*y4 - 36.0*x6 + 24.0*y6)*ff1/r11
-     ggvec(26) = (600.0*x3*y3 - 225.0*x5*y - 120.0*x*y5)*ff1/r11
-     ggvec(27) = (360.0*x2*y4 - 540.0*x4*y2 + 45.0*x6)*ff1/r11
+     ggvec(21) = (360.0*x4*y2 - 540.0*x2*y4 + 45.0*y6)/r11                  
+     ggvec(22) = (600.0*x3*y3 - 225.0*x*y5 - 120.0*x5*y)/r11
+     ggvec(23) = (477.0*x2*y4 - 408.0*x4*y2 - 36.0*y6 + 24.0*x6)/r11
+     ggvec(24) = (180.0*x*y5 - 585.0*x3*y3 + 180.0*x5*y)/r11
+     ggvec(25) = (477.0*x4*y2 - 408.0*x2*y4 - 36.0*x6 + 24.0*y6)/r11
+     ggvec(26) = (600.0*x3*y3 - 225.0*x5*y - 120.0*x*y5)/r11
+     ggvec(27) = (360.0*x2*y4 - 540.0*x4*y2 + 45.0*x6)/r11
 #endif
 #if order>=7
      x7=x6*x;y7=y6*y
      r13 = r11*rad2
-     ggvec(28) = (6300.0*x3*y4 - 2520.0*x5*y2 - 1575.0*x*y6)*ff1/r13               
-     ggvec(29) = (720.0*x6*y - 225.0*y7 + 4050.0*x2*y5 - 5400.0*x4*y3)*ff1/r13
-     ggvec(30) = (1350.0*x*y6 - 120.0*x7 + 3000.0*x5*y2 + 5925.0*x3*y4)*ff1/r13
-     ggvec(31) = (180.0*y7 - 3555.0*x2*y5 + 5580.0*x4*y3 - 1080.0*x6*y)*ff1/r13
-     ggvec(32) = (180.0*x7 - 3555.0*x5*y2 + 5580.0*x3*y4 - 1080.0*x*y6)*ff1/r13
-     ggvec(33) = (1350.0*x6*y - 120.0*y7 + 3000.0*x2*y5 + 5925.0*x4*y3)*ff1/r13
-     ggvec(34) = (720.0*x*y6 - 225.0*x7 + 4050.0*x5*y2 - 5400.0*x3*y4)*ff1/r13
-     ggvec(35) = (6300.0*x4*y3 - 2520.0*x2*y5 - 1575.0*x6*y)*ff1/r13
+     ggvec(28) = (6300.0*x3*y4 - 2520.0*x5*y2 - 1575.0*x*y6)/r13               
+     ggvec(29) = (720.0*x6*y - 225.0*y7 + 4050.0*x2*y5 - 5400.0*x4*y3)/r13
+     ggvec(30) = (1350.0*x*y6 - 120.0*x7 + 3000.0*x5*y2 + 5925.0*x3*y4)/r13
+     ggvec(31) = (180.0*y7 - 3555.0*x2*y5 + 5580.0*x4*y3 - 1080.0*x6*y)/r13
+     ggvec(32) = (180.0*x7 - 3555.0*x5*y2 + 5580.0*x3*y4 - 1080.0*x*y6)/r13
+     ggvec(33) = (1350.0*x6*y - 120.0*y7 + 3000.0*x2*y5 + 5925.0*x4*y3)/r13
+     ggvec(34) = (720.0*x*y6 - 225.0*x7 + 4050.0*x5*y2 - 5400.0*x3*y4)/r13
+     ggvec(35) = (6300.0*x4*y3 - 2520.0*x2*y5 - 1575.0*x6*y)/r13
 #endif
 #if order>=8
      x8=x7*x;y8=y7*y
      r15 = r13*rad2
-     ggvec(36) = (20160.0*x6*y2 - 75600.0*x4*y4+37800.0*x2*y6-1575.0*y8)*ff1/r15        
-     ggvec(37) = (11025.0*x*y7-66150.0*x3*y5+52920.0*x5*y3-5040.0*x7*y)*ff1/r15
-     ggvec(38) = (720.0*x8-24840.0*x6*y2+74250.0*x4*y4-33975.0*x2*y6+1350.0*y8)*ff1/r15
-     ggvec(39) = (61425.0*x3*y5-9450.0*x*y7-56700*x5*y3-7560.0*x7*y)*ff1/r15
-     ggvec(40) = (29700.0*(x2*y6+x6*y2)-1080.0*(x8+y8)-73575.0*x4*y4)*ff1/r15
-     ggvec(41) = (61425.0*x5*y3-9450.0*x7*y-56700*x3*y5-7560.0*x*y7)*ff1/r15
-     ggvec(42) = (720.0*y8-24840.0*x2*y6+74250.0*x4*y4-33975.0*x6*y2+1350.0*x8)*ff1/r15
-     ggvec(43) = (11025.0*x7*y-66150.0*x5*y3+52920.0*x3*y5-5040.0*x*y7)*ff1/r15
-     ggvec(44) = (20160.0*x2*y6 - 75600.0*x4*y4+37800.0*x6*y2-1575.0*x8)*ff1/r15 
+     ggvec(36) = (20160.0*x6*y2 - 75600.0*x4*y4+37800.0*x2*y6-1575.0*y8)/r15        
+     ggvec(37) = (11025.0*x*y7-66150.0*x3*y5+52920.0*x5*y3-5040.0*x7*y)/r15
+     ggvec(38) = (720.0*x8-24840.0*x6*y2+74250.0*x4*y4-33975.0*x2*y6+1350.0*y8)/r15
+     ggvec(39) = (61425.0*x3*y5-9450.0*x*y7-56700*x5*y3-7560.0*x7*y)/r15
+     ggvec(40) = (29700.0*(x2*y6+x6*y2)-1080.0*(x8+y8)-73575.0*x4*y4)/r15
+     ggvec(41) = (61425.0*x5*y3-9450.0*x7*y-56700*x3*y5-7560.0*x*y7)/r15
+     ggvec(42) = (720.0*y8-24840.0*x2*y6+74250.0*x4*y4-33975.0*x6*y2+1350.0*x8)/r15
+     ggvec(43) = (11025.0*x7*y-66150.0*x5*y3+52920.0*x3*y5-5040.0*x*y7)/r15
+     ggvec(44) = (20160.0*x2*y6 - 75600.0*x4*y4+37800.0*x6*y2-1575.0*x8)/r15 
 #endif
   end function abfs
 !! ------------------------------------------------------------------------------------------------
@@ -1500,265 +1407,204 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
 !! Generated with: H_{p,q}(x,y) = H_{p}(x/sqrt(2))*H_{q}(y/sqrt(2))*2^((p+q)/2)
 !!
 !! NB sqrt2 and oosqrt are set in kind_parameters
-!! NB ff1 multiplies the Hermite polynomial by an RBF to improve spectral accuracy
 !! ------------------------------------------------------------------------------------------------
-  function abfs(dummy,x,y,ff1) result(ggvec)         !! TEN
-     real(rkind),intent(in) :: x,y,ff1,dummy
-     real(rkind) :: xx,yy
-#if order==2
-     real(rkind),dimension(5) :: ggvec
-#elif order==3
-     real(rkind),dimension(9) :: ggvec
-#elif order==4
+  function abfs(dummy,x,y) result(ggvec)         !! TEN
+     real(rkind),intent(in) :: x,y,dummy
+#if order==4
      real(rkind),dimension(14) :: ggvec
-#elif order==5
-     real(rkind),dimension(20) :: ggvec
 #elif order==6
      real(rkind),dimension(27) :: ggvec
-#elif order==7
-     real(rkind),dimension(35) :: ggvec
 #elif order==8
      real(rkind),dimension(44) :: ggvec
-#elif order==9
-     real(rkind),dimension(54) :: ggvec
 #elif order==10
      real(rkind),dimension(65) :: ggvec
-#elif order==11
-     real(rkind),dimension(77) :: ggvec
-#elif order==12
-     real(rkind),dimension(90) :: ggvec
 #endif
      !! Scale xx and yy (Probablists to physicists)
-     xx = oosqrt2*x;yy=oosqrt2*y
      
 #if order>=2
-     ggvec(1) = ff1*Hermite1(xx)*oosqrt2
-     ggvec(2) = ff1*Hermite1(yy)*oosqrt2
-     ggvec(3) = ff1*Hermite2(xx)*half
-     ggvec(4) = ff1*Hermite1(xx)*Hermite1(yy)*half
-     ggvec(5) = ff1*Hermite2(yy)*half
+     ggvec(1) = Hermite1(x)
+     ggvec(2) = Hermite1(y)
+     ggvec(3) = Hermite2(x)
+     ggvec(4) = Hermite1(x)*Hermite1(y)
+     ggvec(5) = Hermite2(y)
 #endif
 #if order>=3
-     ggvec(6) = ff1*Hermite3(xx)*oosqrt2*half
-     ggvec(7) = ff1*Hermite2(xx)*Hermite1(yy)*oosqrt2*half
-     ggvec(8) = ff1*Hermite1(xx)*Hermite2(yy)*oosqrt2*half
-     ggvec(9) = ff1*Hermite3(yy)*oosqrt2*half
+     ggvec(6) = Hermite3(x)
+     ggvec(7) = Hermite2(x)*Hermite1(y)
+     ggvec(8) = Hermite1(x)*Hermite2(y)
+     ggvec(9) = Hermite3(y)
 #endif
 #if order>=4
-     ggvec(10) = ff1*Hermite4(xx)*0.25d0
-     ggvec(11) = ff1*Hermite3(xx)*Hermite1(yy)*0.25d0
-     ggvec(12) = ff1*Hermite2(xx)*Hermite2(yy)*0.25d0
-     ggvec(13) = ff1*Hermite1(xx)*Hermite3(yy)*0.25d0
-     ggvec(14) = ff1*Hermite4(yy)*0.25d0
+     ggvec(10) = Hermite4(x)
+     ggvec(11) = Hermite3(x)*Hermite1(y)
+     ggvec(12) = Hermite2(x)*Hermite2(y)
+     ggvec(13) = Hermite1(x)*Hermite3(y)
+     ggvec(14) = Hermite4(y)
 #endif
 #if order>=5
-     ggvec(15) = ff1*Hermite5(xx)*oosqrt2*0.25d0
-     ggvec(16) = ff1*Hermite4(xx)*Hermite1(yy)*oosqrt2*0.25d0
-     ggvec(17) = ff1*Hermite3(xx)*Hermite2(yy)*oosqrt2*0.25d0
-     ggvec(18) = ff1*Hermite2(xx)*Hermite3(yy)*oosqrt2*0.25d0
-     ggvec(19) = ff1*Hermite1(xx)*Hermite4(yy)*oosqrt2*0.25d0
-     ggvec(20) = ff1*Hermite5(yy)*oosqrt2*0.25d0
+     ggvec(15) = Hermite5(x)
+     ggvec(16) = Hermite4(x)*Hermite1(y)
+     ggvec(17) = Hermite3(x)*Hermite2(y)
+     ggvec(18) = Hermite2(x)*Hermite3(y)
+     ggvec(19) = Hermite1(x)*Hermite4(y)
+     ggvec(20) = Hermite5(y)
 #endif
 #if order>=6
-     ggvec(21) = ff1*Hermite6(xx)*0.125d0
-     ggvec(22) = ff1*Hermite5(xx)*Hermite1(yy)*0.125d0
-     ggvec(23) = ff1*Hermite4(xx)*Hermite2(yy)*0.125d0
-     ggvec(24) = ff1*Hermite3(xx)*Hermite3(yy)*0.125d0
-     ggvec(25) = ff1*Hermite2(xx)*Hermite4(yy)*0.125d0
-     ggvec(26) = ff1*Hermite1(xx)*Hermite5(yy)*0.125d0
-     ggvec(27) = ff1*Hermite6(yy)*0.125d0
+     ggvec(21) = Hermite6(x)
+     ggvec(22) = Hermite5(x)*Hermite1(y)
+     ggvec(23) = Hermite4(x)*Hermite2(y)
+     ggvec(24) = Hermite3(x)*Hermite3(y)
+     ggvec(25) = Hermite2(x)*Hermite4(y)
+     ggvec(26) = Hermite1(x)*Hermite5(y)
+     ggvec(27) = Hermite6(y)
 #endif
 #if order>=7
-     ggvec(28) = ff1*Hermite7(xx)*oosqrt2*0.125d0
-     ggvec(29) = ff1*Hermite6(xx)*Hermite1(yy)*oosqrt2*0.125d0
-     ggvec(30) = ff1*Hermite5(xx)*Hermite2(yy)*oosqrt2*0.125d0
-     ggvec(31) = ff1*Hermite4(xx)*Hermite3(yy)*oosqrt2*0.125d0
-     ggvec(32) = ff1*Hermite3(xx)*Hermite4(yy)*oosqrt2*0.125d0
-     ggvec(33) = ff1*Hermite2(xx)*Hermite5(yy)*oosqrt2*0.125d0
-     ggvec(34) = ff1*Hermite1(xx)*Hermite6(yy)*oosqrt2*0.125d0
-     ggvec(35) = ff1*Hermite7(yy)*oosqrt2*0.125d0
+     ggvec(28) = Hermite7(x)
+     ggvec(29) = Hermite6(x)*Hermite1(y)
+     ggvec(30) = Hermite5(x)*Hermite2(y)
+     ggvec(31) = Hermite4(x)*Hermite3(y)
+     ggvec(32) = Hermite3(x)*Hermite4(y)
+     ggvec(33) = Hermite2(x)*Hermite5(y)
+     ggvec(34) = Hermite1(x)*Hermite6(y)
+     ggvec(35) = Hermite7(y)
 #endif
 #if order>=8
-     ggvec(36) = ff1*Hermite8(xx)*0.0625d0
-     ggvec(37) = ff1*Hermite7(xx)*Hermite1(yy)*0.0625d0
-     ggvec(38) = ff1*Hermite6(xx)*Hermite2(yy)*0.0625d0
-     ggvec(39) = ff1*Hermite5(xx)*Hermite3(yy)*0.0625d0
-     ggvec(40) = ff1*Hermite4(xx)*Hermite4(yy)*0.0625d0
-     ggvec(41) = ff1*Hermite3(xx)*Hermite5(yy)*0.0625d0
-     ggvec(42) = ff1*Hermite2(xx)*Hermite6(yy)*0.0625d0
-     ggvec(43) = ff1*Hermite1(xx)*Hermite7(yy)*0.0625d0
-     ggvec(44) = ff1*Hermite8(yy)*0.0625d0
+     ggvec(36) = Hermite8(x)
+     ggvec(37) = Hermite7(x)*Hermite1(y)
+     ggvec(38) = Hermite6(x)*Hermite2(y)
+     ggvec(39) = Hermite5(x)*Hermite3(y)
+     ggvec(40) = Hermite4(x)*Hermite4(y)
+     ggvec(41) = Hermite3(x)*Hermite5(y)
+     ggvec(42) = Hermite2(x)*Hermite6(y)
+     ggvec(43) = Hermite1(x)*Hermite7(y)
+     ggvec(44) = Hermite8(y)
 #endif
 #if order>=9
-     ggvec(45) = ff1*Hermite9(xx)*oosqrt2*0.0625d0
-     ggvec(46) = ff1*Hermite8(xx)*Hermite1(yy)*oosqrt2*0.0625d0
-     ggvec(47) = ff1*Hermite7(xx)*Hermite2(yy)*oosqrt2*0.0625d0
-     ggvec(48) = ff1*Hermite6(xx)*Hermite3(yy)*oosqrt2*0.0625d0
-     ggvec(49) = ff1*Hermite5(xx)*Hermite4(yy)*oosqrt2*0.0625d0
-     ggvec(50) = ff1*Hermite4(xx)*Hermite5(yy)*oosqrt2*0.0625d0
-     ggvec(51) = ff1*Hermite3(xx)*Hermite6(yy)*oosqrt2*0.0625d0
-     ggvec(52) = ff1*Hermite2(xx)*Hermite7(yy)*oosqrt2*0.0625d0
-     ggvec(53) = ff1*Hermite1(xx)*Hermite8(yy)*oosqrt2*0.0625d0
-     ggvec(54)= ff1*Hermite9(yy)*oosqrt2*0.0625d0
+     ggvec(45) = Hermite9(x)
+     ggvec(46) = Hermite8(x)*Hermite1(y)
+     ggvec(47) = Hermite7(x)*Hermite2(y)
+     ggvec(48) = Hermite6(x)*Hermite3(y)
+     ggvec(49) = Hermite5(x)*Hermite4(y)
+     ggvec(50) = Hermite4(x)*Hermite5(y)
+     ggvec(51) = Hermite3(x)*Hermite6(y)
+     ggvec(52) = Hermite2(x)*Hermite7(y)
+     ggvec(53) = Hermite1(x)*Hermite8(y)
+     ggvec(54)= Hermite9(y)
 #endif
 #if order>=10
-     ggvec(55) = ff1*Hermite10(xx)*0.03125d0
-     ggvec(56) = ff1*Hermite9(xx)*Hermite1(yy)*0.03125d0
-     ggvec(57) = ff1*Hermite8(xx)*Hermite2(yy)*0.03125d0
-     ggvec(58) = ff1*Hermite7(xx)*Hermite3(yy)*0.03125d0
-     ggvec(59) = ff1*Hermite6(xx)*Hermite4(yy)*0.03125d0
-     ggvec(60) = ff1*Hermite5(xx)*Hermite5(yy)*0.03125d0
-     ggvec(61) = ff1*Hermite4(xx)*Hermite6(yy)*0.03125d0
-     ggvec(62) = ff1*Hermite3(xx)*Hermite7(yy)*0.03125d0
-     ggvec(63) = ff1*Hermite2(xx)*Hermite8(yy)*0.03125d0
-     ggvec(64)= ff1*Hermite1(xx)*Hermite9(yy)*0.03125d0
-     ggvec(65)= ff1*Hermite10(yy)*0.03125d0
-#endif
-#if order>=11
-     ggvec(66) = ff1*Hermite11(xx)*0.03125d0*oosqrt2
-     ggvec(67) = ff1*Hermite10(xx)*Hermite1(yy)*0.03125d0*oosqrt2
-     ggvec(68) = ff1*Hermite9(xx)*Hermite2(yy)*0.03125d0*oosqrt2
-     ggvec(69) = ff1*Hermite8(xx)*Hermite3(yy)*0.03125d0*oosqrt2
-     ggvec(70) = ff1*Hermite7(xx)*Hermite4(yy)*0.03125d0*oosqrt2
-     ggvec(71) = ff1*Hermite6(xx)*Hermite5(yy)*0.03125d0*oosqrt2
-     ggvec(72) = ff1*Hermite5(xx)*Hermite6(yy)*0.03125d0*oosqrt2
-     ggvec(73) = ff1*Hermite4(xx)*Hermite7(yy)*0.03125d0*oosqrt2
-     ggvec(74) = ff1*Hermite3(xx)*Hermite8(yy)*0.03125d0*oosqrt2
-     ggvec(75) = ff1*Hermite2(xx)*Hermite9(yy)*0.03125d0*oosqrt2
-     ggvec(76) = ff1*Hermite1(xx)*Hermite10(yy)*0.03125d0*oosqrt2
-     ggvec(76) = ff1*Hermite11(yy)*0.03125d0*oosqrt2
-#endif
-#if order>=12
-     ggvec(78) = ff1*Hermite12(xx)*0.015625d0
-     ggvec(79) = ff1*Hermite11(xx)*Hermite1(yy)*0.015625d0
-     ggvec(80) = ff1*Hermite10(xx)*Hermite2(yy)*0.015625d0
-     ggvec(81) = ff1*Hermite9(xx)*Hermite3(yy)*0.015625d0
-     ggvec(82) = ff1*Hermite8(xx)*Hermite4(yy)*0.015625d0
-     ggvec(83) = ff1*Hermite7(xx)*Hermite5(yy)*0.015625d0
-     ggvec(84) = ff1*Hermite6(xx)*Hermite6(yy)*0.015625d0
-     ggvec(85) = ff1*Hermite5(xx)*Hermite7(yy)*0.015625d0
-     ggvec(86) = ff1*Hermite4(xx)*Hermite8(yy)*0.015625d0
-     ggvec(87) = ff1*Hermite3(xx)*Hermite9(yy)*0.015625d0
-     ggvec(88) = ff1*Hermite2(xx)*Hermite10(yy)*0.015625d0
-     ggvec(89) = ff1*Hermite1(xx)*Hermite11(yy)*0.015625d0
-     ggvec(90) = ff1*Hermite12(yy)*0.015625d0
+     ggvec(55) = Hermite10(x)
+     ggvec(56) = Hermite9(x)*Hermite1(y)
+     ggvec(57) = Hermite8(x)*Hermite2(y)
+     ggvec(58) = Hermite7(x)*Hermite3(y)
+     ggvec(59) = Hermite6(x)*Hermite4(y)
+     ggvec(60) = Hermite5(x)*Hermite5(y)
+     ggvec(61) = Hermite4(x)*Hermite6(y)
+     ggvec(62) = Hermite3(x)*Hermite7(y)
+     ggvec(63) = Hermite2(x)*Hermite8(y)
+     ggvec(64)= Hermite1(x)*Hermite9(y)
+     ggvec(65)= Hermite10(y)
 #endif
 
   end function abfs
 !! ------------------------------------------------------------------------------------------------
 #elif ABF==3
 !! LEGENDRE ABFs: Legendre polynomials
-!! NB ff1 multiplies the Legendre polynomial by an RBF to improve spectral accuracy
 !! Only implemented up to O10
 !! ------------------------------------------------------------------------------------------------
-  function abfs(dummy,x,y,ff1) result(ggvec)         !! TEN
-     real(rkind),intent(in) :: x,y,ff1,dummy
-#if order==2
-     real(rkind),dimension(5) :: ggvec
-#elif order==3
-     real(rkind),dimension(9) :: ggvec
-#elif order==4
+  function abfs(dummy,x,y) result(ggvec)         !! TEN
+     real(rkind),intent(in) :: x,y,dummy
+#if order==4
      real(rkind),dimension(14) :: ggvec
-#elif order==5
-     real(rkind),dimension(20) :: ggvec
 #elif order==6
      real(rkind),dimension(27) :: ggvec
-#elif order==7
-     real(rkind),dimension(35) :: ggvec
 #elif order==8
      real(rkind),dimension(44) :: ggvec
-#elif order==9
-     real(rkind),dimension(54) :: ggvec
 #elif order==10
      real(rkind),dimension(65) :: ggvec
-#elif order==11
-     real(rkind),dimension(77) :: ggvec
-#elif order==12
-     real(rkind),dimension(90) :: ggvec
 #endif
      
 #if order>=2
-     ggvec(1) = ff1*Legendre1(x)
-     ggvec(2) = ff1*Legendre1(y)
-     ggvec(3) = ff1*Legendre2(x)
-     ggvec(4) = ff1*Legendre1(x)*Legendre1(y)
-     ggvec(5) = ff1*Legendre2(y)
+     ggvec(1) = Legendre1(x)
+     ggvec(2) = Legendre1(y)
+     ggvec(3) = Legendre2(x)
+     ggvec(4) = Legendre1(x)*Legendre1(y)
+     ggvec(5) = Legendre2(y)
 #endif
 #if order>=3
-     ggvec(6) = ff1*Legendre3(x)
-     ggvec(7) = ff1*Legendre2(x)*Legendre1(y)
-     ggvec(8) = ff1*Legendre1(x)*Legendre2(y)
-     ggvec(9) = ff1*Legendre3(y)
+     ggvec(6) = Legendre3(x)
+     ggvec(7) = Legendre2(x)*Legendre1(y)
+     ggvec(8) = Legendre1(x)*Legendre2(y)
+     ggvec(9) = Legendre3(y)
 #endif
 #if order>=4
-     ggvec(10) = ff1*Legendre4(x)
-     ggvec(11) = ff1*Legendre3(x)*Legendre1(y)
-     ggvec(12) = ff1*Legendre2(x)*Legendre2(y)
-     ggvec(13) = ff1*Legendre1(x)*Legendre3(y)
-     ggvec(14) = ff1*Legendre4(y)
+     ggvec(10) = Legendre4(x)
+     ggvec(11) = Legendre3(x)*Legendre1(y)
+     ggvec(12) = Legendre2(x)*Legendre2(y)
+     ggvec(13) = Legendre1(x)*Legendre3(y)
+     ggvec(14) = Legendre4(y)
 #endif
 #if order>=5
-     ggvec(15) = ff1*Legendre5(x)
-     ggvec(16) = ff1*Legendre4(x)*Legendre1(y)
-     ggvec(17) = ff1*Legendre3(x)*Legendre2(y)
-     ggvec(18) = ff1*Legendre2(x)*Legendre3(y)
-     ggvec(19) = ff1*Legendre1(x)*Legendre4(y)
-     ggvec(20) = ff1*Legendre5(y)
+     ggvec(15) = Legendre5(x)
+     ggvec(16) = Legendre4(x)*Legendre1(y)
+     ggvec(17) = Legendre3(x)*Legendre2(y)
+     ggvec(18) = Legendre2(x)*Legendre3(y)
+     ggvec(19) = Legendre1(x)*Legendre4(y)
+     ggvec(20) = Legendre5(y)
 #endif
 #if order>=6
-     ggvec(21) = ff1*Legendre6(x)
-     ggvec(22) = ff1*Legendre5(x)*Legendre1(y)
-     ggvec(23) = ff1*Legendre4(x)*Legendre2(y)
-     ggvec(24) = ff1*Legendre3(x)*Legendre3(y)
-     ggvec(25) = ff1*Legendre2(x)*Legendre4(y)
-     ggvec(26) = ff1*Legendre1(x)*Legendre5(y)
-     ggvec(27) = ff1*Legendre6(y)
+     ggvec(21) = Legendre6(x)
+     ggvec(22) = Legendre5(x)*Legendre1(y)
+     ggvec(23) = Legendre4(x)*Legendre2(y)
+     ggvec(24) = Legendre3(x)*Legendre3(y)
+     ggvec(25) = Legendre2(x)*Legendre4(y)
+     ggvec(26) = Legendre1(x)*Legendre5(y)
+     ggvec(27) = Legendre6(y)
 #endif
 #if order>=7
-     ggvec(28) = ff1*Legendre7(x)
-     ggvec(29) = ff1*Legendre6(x)*Legendre1(y)
-     ggvec(30) = ff1*Legendre5(x)*Legendre2(y)
-     ggvec(31) = ff1*Legendre4(x)*Legendre3(y)
-     ggvec(32) = ff1*Legendre3(x)*Legendre4(y)
-     ggvec(33) = ff1*Legendre2(x)*Legendre5(y)
-     ggvec(34) = ff1*Legendre1(x)*Legendre6(y)
-     ggvec(35) = ff1*Legendre7(y)
+     ggvec(28) = Legendre7(x)
+     ggvec(29) = Legendre6(x)*Legendre1(y)
+     ggvec(30) = Legendre5(x)*Legendre2(y)
+     ggvec(31) = Legendre4(x)*Legendre3(y)
+     ggvec(32) = Legendre3(x)*Legendre4(y)
+     ggvec(33) = Legendre2(x)*Legendre5(y)
+     ggvec(34) = Legendre1(x)*Legendre6(y)
+     ggvec(35) = Legendre7(y)
 #endif
 #if order>=8
-     ggvec(36) = ff1*Legendre8(x)
-     ggvec(37) = ff1*Legendre7(x)*Legendre1(y)
-     ggvec(38) = ff1*Legendre6(x)*Legendre2(y)
-     ggvec(39) = ff1*Legendre5(x)*Legendre3(y)
-     ggvec(40) = ff1*Legendre4(x)*Legendre4(y)
-     ggvec(41) = ff1*Legendre3(x)*Legendre5(y)
-     ggvec(42) = ff1*Legendre2(x)*Legendre6(y)
-     ggvec(43) = ff1*Legendre1(x)*Legendre7(y)
-     ggvec(44) = ff1*Legendre8(y)
+     ggvec(36) = Legendre8(x)
+     ggvec(37) = Legendre7(x)*Legendre1(y)
+     ggvec(38) = Legendre6(x)*Legendre2(y)
+     ggvec(39) = Legendre5(x)*Legendre3(y)
+     ggvec(40) = Legendre4(x)*Legendre4(y)
+     ggvec(41) = Legendre3(x)*Legendre5(y)
+     ggvec(42) = Legendre2(x)*Legendre6(y)
+     ggvec(43) = Legendre1(x)*Legendre7(y)
+     ggvec(44) = Legendre8(y)
 #endif
 #if order>=9
-     ggvec(45) = ff1*Legendre9(x)
-     ggvec(46) = ff1*Legendre8(x)*Legendre1(y)
-     ggvec(47) = ff1*Legendre7(x)*Legendre2(y)
-     ggvec(48) = ff1*Legendre6(x)*Legendre3(y)
-     ggvec(49) = ff1*Legendre5(x)*Legendre4(y)
-     ggvec(50) = ff1*Legendre4(x)*Legendre5(y)
-     ggvec(51) = ff1*Legendre3(x)*Legendre6(y)
-     ggvec(52) = ff1*Legendre2(x)*Legendre7(y)
-     ggvec(53) = ff1*Legendre1(x)*Legendre8(y)
-     ggvec(54)= ff1*Legendre9(y)
+     ggvec(45) = Legendre9(x)
+     ggvec(46) = Legendre8(x)*Legendre1(y)
+     ggvec(47) = Legendre7(x)*Legendre2(y)
+     ggvec(48) = Legendre6(x)*Legendre3(y)
+     ggvec(49) = Legendre5(x)*Legendre4(y)
+     ggvec(50) = Legendre4(x)*Legendre5(y)
+     ggvec(51) = Legendre3(x)*Legendre6(y)
+     ggvec(52) = Legendre2(x)*Legendre7(y)
+     ggvec(53) = Legendre1(x)*Legendre8(y)
+     ggvec(54)= Legendre9(y)
 #endif
 #if order>=10
-     ggvec(55) = ff1*Legendre10(x)
-     ggvec(56) = ff1*Legendre9(x)*Legendre1(y)
-     ggvec(57) = ff1*Legendre8(x)*Legendre2(y)
-     ggvec(58) = ff1*Legendre7(x)*Legendre3(y)
-     ggvec(59) = ff1*Legendre6(x)*Legendre4(y)
-     ggvec(60) = ff1*Legendre5(x)*Legendre5(y)
-     ggvec(61) = ff1*Legendre4(x)*Legendre6(y)
-     ggvec(62) = ff1*Legendre3(x)*Legendre7(y)
-     ggvec(63) = ff1*Legendre2(x)*Legendre8(y)
-     ggvec(64)= ff1*Legendre1(x)*Legendre9(y)
-     ggvec(65)= ff1*Legendre10(y)
+     ggvec(55) = Legendre10(x)
+     ggvec(56) = Legendre9(x)*Legendre1(y)
+     ggvec(57) = Legendre8(x)*Legendre2(y)
+     ggvec(58) = Legendre7(x)*Legendre3(y)
+     ggvec(59) = Legendre6(x)*Legendre4(y)
+     ggvec(60) = Legendre5(x)*Legendre5(y)
+     ggvec(61) = Legendre4(x)*Legendre6(y)
+     ggvec(62) = Legendre3(x)*Legendre7(y)
+     ggvec(63) = Legendre2(x)*Legendre8(y)
+     ggvec(64)= Legendre1(x)*Legendre9(y)
+     ggvec(65)= Legendre10(y)
 #endif
   end function abfs
 !! ------------------------------------------------------------------------------------------------
@@ -1772,82 +1618,66 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
   function Hermite1(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: Hres
-     Hres = 2.0d0*z
+     Hres = z
   end function Hermite1
   function Hermite2(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: Hres
-     Hres = 4.0d0*z*z - 2.0d0
+     Hres = z*z - 1.0d0
   end function Hermite2
   function Hermite3(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: Hres
-     Hres = 8.0d0*z*z*z - 12.0d0*z
+     Hres = z*z*z - 3.0d0*z
   end function Hermite3
   function Hermite4(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: Hres
-     Hres = 16.0d0*z*z*z*z - 48.0d0*z*z + 12.0d0
+     Hres = z*z*z*z - 6.0d0*z*z + 3.0d0
   end function Hermite4
   function Hermite5(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: z2,z3
      real(rkind) :: Hres
      z2=z*z;z3=z*z2
-     Hres = 32.0d0*z2*z3 - 160.0d0*z3 + 120.0*z
+     Hres = z2*z3 - 10.0d0*z3 + 15.0*z
   end function Hermite5
   function Hermite6(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: z2,z3
      real(rkind) :: Hres
      z2=z*z;z3=z*z2
-     Hres = 64.0d0*z3*z3 - 480.0d0*z2*z2 + 720.0d0*z2 - 120.0d0
+     Hres = z3*z3 - 15.0d0*z2*z2 + 45.0d0*z2 - 15.0d0
   end function Hermite6
   function Hermite7(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: z2,z3,z4
      real(rkind) :: Hres
      z2=z*z;z3=z*z2;z4=z3*z
-     Hres = 128.0d0*z4*z3 - 1344.0d0*z3*z2 + 3360.0d0*z3 - 1680.0d0*z
+     Hres = z4*z3 - 21.0d0*z3*z2 + 105.0d0*z3 - 105.0d0*z
   end function Hermite7
   function Hermite8(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: z2,z4
      real(rkind) :: Hres
      z2=z*z;z4=z2*z2
-     Hres = 256.0d0*z4*z4 - 3584.0d0*z4*z2 + 13440.0d0*z4 - 13440.0d0*z2 + 1680.0d0
+     Hres = z4*z4 - 28.0d0*z4*z2 + 210.0d0*z4 - 420.0d0*z2 + 105.0d0
   end function Hermite8
   function Hermite9(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: z2,z3,z4
      real(rkind) :: Hres
      z2=z*z;z3=z*z2;z4=z3*z
-     Hres = 512.0*z4*z3*z2 - 9216.0d0*z4*z3 + 48384.0d0*z3*z2 - 80640.0d0*z3 + 30240.0d0*z
+     Hres = z4*z3*z2 - 36.0d0*z4*z3 + 378.0d0*z3*z2 - 1260.0d0*z3 + 945.0d0*z
   end function Hermite9
   function Hermite10(z) result(Hres)
      real(rkind),intent(in) :: z
      real(rkind) :: z2,z4
      real(rkind) :: Hres
      z2=z*z;z4=z2*z2
-     Hres = 1024.0d0*z4*z4*z2 - 23040.0d0*z4*z4 + 161280.0d0*z4*z2 - 403200.0d0*z4 &
-            + 302400.0d0*z2 - 30240.0d0
+     Hres = z4*z4*z2 - 45.0d0*z4*z4 + 630.0d0*z4*z2 - 3150.0d0*z4 &
+            + 4725.0d0*z2 - 945.0d0
   end function Hermite10
-  function Hermite11(z) result(Hres)
-     real(rkind),intent(in) :: z
-     real(rkind) :: z2,z4
-     real(rkind) :: Hres
-     z2=z*z;z4=z2*z2
-     Hres = 2048.0d0*z4*z4*z2*z - 56320.0d0*z4*z4*z + 506880.0d0*z4*z2*z - 1774080.0d0*z4*z &
-            + 2217600.0d0*z2*z - 665280.0d0*z
-  end function Hermite11
-  function Hermite12(z) result(Hres)
-     real(rkind),intent(in) :: z
-     real(rkind) :: z2,z4
-     real(rkind) :: Hres
-     z2=z*z;z4=z2*z2
-     Hres = 4096.0d0*z4*z4*z4 - 135168.0d0*z4*z4*z2 + 1520640.0d0*z4*z4 - 7096320.0d0*z4*z2 &
-            + 13305600.0d0*z4 - 7983360.0d0*z2 + 665280.0d0
-  end function Hermite12  
 !! ------------------------------------------------------------------------------------------------
 !! Univariate Legendre polynomials
 !! ------------------------------------------------------------------------------------------------

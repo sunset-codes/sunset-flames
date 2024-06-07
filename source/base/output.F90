@@ -162,7 +162,7 @@ contains
      use derivatives
      integer(ikind),intent(in) :: n_out
      integer(ikind) :: i,j,k,np_out_local,dimsout,nspec_out,nprocsout,iflag,ispec
-     character(70) :: fname
+     character(70) :: fname,tarcom
      real(rkind),dimension(:),allocatable :: vort,testout
      real(rkind),dimension(:,:),allocatable :: testoutv
      real(rkind) :: tmpT,xn,yn,tmpro,tmpVort
@@ -299,6 +299,31 @@ contains
      flush(21)
 #endif     
 
+#ifdef tarout
+     !! Compress fields files
+     if(iproc.eq.0) then
+        write(6,*) "FIELDS",n_out," written, compressing"
+        
+        !! Construct tar command depending on output number
+        if( n_out .lt. 10 ) then 
+           write(tarcom,'(A27,I1,A23)') 'cd data_out/ && tar -zcf f_',n_out,'.tar.gz fields* && cd -'
+        else if( n_out .lt. 100 ) then 
+           write(tarcom,'(A27,I2,A23)') 'cd data_out/ && tar -zcf f_',n_out,'.tar.gz fields* && cd -'
+        else if( n_out .lt. 1000 ) then
+           write(tarcom,'(A27,I3,A23)') 'cd data_out/ && tar -zcf f_',n_out,'.tar.gz fields* && cd -'
+        else
+           write(tarcom,'(A27,I4,A23)') 'cd data_out/ && tar -zcf f_',n_out,'.tar.gz fields* && cd -'
+        end if         
+        
+        !! Compress then delete the ascii data
+        call system(tarcom)
+        call system('rm ./data_out/fields*')
+     end if
+#ifdef mp         
+     call MPI_BARRIER( MPI_COMM_WORLD, ierror)                            
+#endif       
+#endif 
+     
      return
   end subroutine output_layer
 !! ------------------------------------------------------------------------------------------------  
@@ -308,7 +333,7 @@ contains
      !! This routine is only called for processors which are outputting
      integer(ikind),intent(in) :: np_out_local
      integer(ikind) :: i,j,k,dimsout,nspec_out,nprocsout,iflag,ispec
-     character(70) :: fname
+     character(70) :: fname,tarcom
      real(rkind) :: tmpT,xn,yn,tmpro
 
          
@@ -337,8 +362,22 @@ contains
      flush(20)
      close(20)
      
-     !! Compress and bundle nodes files
-!     call MPI_BARRIER( MPI_COMM_WORLD, ierror)                            
+#ifdef tarout     
+     !! Compress the nodes files
+     if(iproc.eq.0) then
+        write(6,*) "NODES written, compressing"
+        
+        !! Construct tar command depending on output number
+        write(tarcom,'(A48)') 'cd data_out/ && tar -zcf n.tar.gz nodes* && cd -'
+        
+        !! Compress then delete the ascii data
+        call system(tarcom)
+        call system('rm ./data_out/nodes*')
+     end if     
+#ifdef mp         
+     call MPI_BARRIER( MPI_COMM_WORLD, ierror)                            
+#endif   
+#endif
 
 
      return

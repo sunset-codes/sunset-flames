@@ -20,7 +20,7 @@ module setup_flow
   
   integer(ikind), parameter :: n_modes=8
   real(rkind),dimension(n_modes) :: mode_amp,mode_phase
-  real(rkind), parameter :: ptbn_size = zero!half   !! perturbation size in multiples of fl_thck
+  real(rkind), parameter :: ptbn_size = half   !! perturbation size in multiples of fl_thck
   
 contains
 !! ------------------------------------------------------------------------------------------------

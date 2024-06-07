@@ -119,11 +119,9 @@ program sunset
   !! Deallocate particle properties and neighbour lists
   call deallocate_everything
 #ifdef mp    
-!  call MPI_FINALIZE(ierror)
-  call MPI_Abort(MPI_COMM_WORLD, n_out, ierror)       
-#else
-  stop
+  call MPI_FINALIZE(ierror)
 #endif  
+  stop
 end program sunset
 !! ------------------------------------------------------------------------------------------------
 subroutine deallocate_everything

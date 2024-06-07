@@ -85,7 +85,7 @@ program datgen
 
      yl=2.0d0*pi
      xl=yl
-     dx0=yl/128.0d0
+     dx0=yl/530.0d0
      xbcond_L=1;xbcond_U=1;ybcond_L=1;ybcond_U=1
      
      nb_patches = 4
@@ -135,7 +135,7 @@ case(4) !! Rayleigh-Taylor geometry
 !! ------------------------------------------------------------------------------------------------
 case(5) !! Inflow/outflow tube for simple flames
 
-     yl=0.03d0!0.0125d0  ! channel width
+     yl=0.05d0!0.0125d0  ! channel width
      xl=1.0d0 ! channel length
      dx0=xl/500.0       !15
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
@@ -289,15 +289,15 @@ case(8) !! Arrays of cylinders for lean H2 flame dynamics tests
 !! ------------------------------------------------------------------------------------------------
 case(9) !! Porous cylinder array
 
-     nbx = 10
-     nby = 8 
+     nbx = 2  !! Number of cylinders along x
+     nby = 4   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
      nbtot = nbx*nby + nbx/2
 
      D_cyl = 1.0d0;h0 = 0.5d0*D_cyl  !! Cylinder diameter (unity)
-     S_cyl = 1.5d0*D_cyl             !! Cylinder spacing (multiples of D_cyl)
+     S_cyl = 1.25d0*D_cyl             !! Cylinder spacing (multiples of D_cyl)
      xl = 10.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length
      yl = dble(nby)*S_cyl                      !! Channel width 
-     dx0 = D_cyl/50                  !! Baseline resolution
+     dx0 = D_cyl/125                  !! Baseline resolution
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
      
@@ -554,9 +554,9 @@ end select
   
   !! Write to fort file for quick visualisation
 !!  write(31,*) npfb
-!  do i=1,npfb
-!     write(31,*) xp(i),yp(i),dxp(i)
-!  end do
+  do i=1,npfb
+     write(31,*) xp(i),yp(i),dxp(i)
+  end do
   !! Use Octave/Matlab and run  "A=load('fort.31');scatter(A(:,1),A(:,2),10,A(:,3),'filled');colorbar" 
   !! from this directory for instant visualisation.
   

@@ -44,7 +44,7 @@ contains
      !$omp end parallel
      n_threads = 1
      call omp_set_num_threads(n_threads)  !! Hard-coded to single-threads if using MPI
-     write(6,*) "nprocs,iproc,n_threads:",nprocs,iproc,n_threads  
+!     write(6,*) "nprocs,iproc,n_threads:",nprocs,iproc,n_threads  
 #else  
      !$omp parallel
      n_threads = omp_get_num_threads()
@@ -85,7 +85,7 @@ contains
      !! Set the domain lengths
      L_domain_x = (xmax - xmin)*L_char
      L_domain_y = (ymax - ymin)*L_char
-     L_domain_z = L_domain_y/four
+     L_domain_z = L_domain_y!/four
 
      
      read(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
@@ -199,9 +199,9 @@ contains
 !write(6,*) "iproc",iproc,"YU,YD",YU_thisproc,YD_thisproc
      
     
-     write(6,*) "process",iproc,"npfb,nb",npfb,nb
+!     write(6,*) "process",iproc,"npfb,nb",npfb,nb
      call MPI_BARRIER( MPI_COMM_WORLD, ierror)     
-     write(6,*) iproc,nb,npfb     
+!     write(6,*) iproc,nb,npfb     
 #else
      write(6,*) nb,npfb     
 #endif     
@@ -364,7 +364,7 @@ contains
 !     call MPI_BARRIER( MPI_COMM_WORLD, ierror)     
 !     call MPI_Abort(MPI_COMM_WORLD, ii, ierror)
                            
-write(6,*) "sizes",iproc,npfb,np_nohalo,np            
+!write(6,*) "sizes",iproc,npfb,np_nohalo,np            
                  
      return
   end subroutine refine_and_finalise_domain
@@ -406,7 +406,7 @@ write(6,*) "sizes",iproc,npfb,np_nohalo,np
         dz = L_domain_z_dimensionless/dble(ij_count_fd/2 + 2)
      end if
      
-     write(6,*) "iproc",iproc,"Z-domain number and spacing",nz_global,dz
+!     write(6,*) "iproc",iproc,"Z-domain number and spacing",nz_global,dz
      
      !! Temporary arrays
      allocate(rptmp(npfb,dims),rnormtmp(npfb,dims),htmp(npfb),stmp(npfb))
