@@ -300,6 +300,9 @@ contains
 #endif     
 
 #ifdef tarout
+#ifdef mp         
+     call MPI_BARRIER( MPI_COMM_WORLD, ierror)                            
+#endif   
      !! Compress fields files
      if(iproc.eq.0) then
         write(6,*) "FIELDS",n_out," written, compressing"
@@ -363,6 +366,9 @@ contains
      close(20)
      
 #ifdef tarout     
+#ifdef mp         
+     call MPI_BARRIER( MPI_COMM_WORLD, ierror)                            
+#endif   
      !! Compress the nodes files
      if(iproc.eq.0) then
         write(6,*) "NODES written, compressing"
