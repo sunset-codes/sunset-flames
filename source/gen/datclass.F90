@@ -289,66 +289,70 @@ case(8) !! Arrays of cylinders for lean H2 flame dynamics tests
 !! ------------------------------------------------------------------------------------------------
 case(9) !! Porous cylinder array
 
-     nbx = 2  !! Number of cylinders along x
-     nby = 4   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
+     nbx = 8  !! Number of cylinders along x
+     nby = 8   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
      nbtot = nbx*nby + nbx/2
 
      D_cyl = 1.0d0;h0 = 0.5d0*D_cyl  !! Cylinder diameter (unity)
-     S_cyl = 1.25d0*D_cyl             !! Cylinder spacing (multiples of D_cyl)
-     xl = 10.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length
-     yl = dble(nby)*S_cyl                      !! Channel width 
-     dx0 = D_cyl/125                  !! Baseline resolution
+     S_cyl = (5.0d0/4.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
+     yl = dble(max(nby,1))*S_cyl                      !! Channel width 
+     xl = 25.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
+     dx0 = D_cyl/75.0d0                  !! Baseline resolution
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
+!     yl=yl/2.0
      
      nb_patches = 4
      allocate(b_node(nb_patches,2),b_edge(nb_patches,2))
      allocate(b_type(nb_patches))
      b_type(:) = (/ 3, 2, 3, 1/)  
-     b_node(1,:) = (/ -5.0d0*S_cyl, -0.5d0*yl /)
-     b_node(2,:) = (/ -5.0d0*S_cyl + xl, -0.5d0*yl /)
-     b_node(3,:) = (/ -5.0d0*S_cyl + xl, 0.5d0*yl /)
-     b_node(4,:) = (/ -5.0d0*S_cyl, 0.5d0*yl /)
+     b_node(1,:) = (/ -12.0d0*D_cyl, -0.5d0*yl /)
+     b_node(2,:) = (/ -12.0d0*D_cyl+xl, -0.5d0*yl /)
+     b_node(3,:) = (/ -12.0d0*D_cyl+xl, 0.5d0*yl /)
+     b_node(4,:) = (/ -12.0d0*D_cyl, 0.5d0*yl /)
      nb_blobs=nbtot
-     open(unit=191,file="blob_fcoefs.in")
-     read(191,*) n_blob_coefs
-     allocate(blob_centre(nb_blobs,2),blob_coeffs(nb_blobs,n_blob_coefs),blob_rotation(nb_blobs))
-     do i=1,n_blob_coefs
-        read(191,*) blob_coeffs(1,i)
-     end do
-     close(191)
-     blob_coeffs(1,:)=0.0d0;blob_coeffs(1,1)=1.0d0
-     blob_coeffs(1,:) = blob_coeffs(1,:)*h0;blob_rotation(1)=-0.0d0*pi
-
-     ii = 0 
-     do j=1,nbx
- 
-        if(mod(j,2).eq.0) then !! Even columns
-  
-           do i=1,nby+1
-              ii = ii+1
-              blob_centre(ii,:) = (/ (dble(j-1))*r3o2*S_cyl,S_cyl*(dble(nby)/2.0d0 - dble(i)+1.0d0) /)    
-           end do   
-   
-        else !! Odd columns
-           do i=1,nby
-              ii = ii+1
-              blob_centre(ii,:) = (/ dble(j-1)*r3o2*S_cyl,S_cyl*(0.5d0+dble(nby)/2.0d0 - dble(i)) /)
-           end do    
-        end if
-        
-     end do
-
-     !! Multiple blobs, copy coefficients and orientations from blob 1
-     if(nb_blobs.gt.1)then
-        do i=2,nb_blobs
-           blob_coeffs(i,:) = blob_coeffs(1,:);blob_rotation(i)=blob_rotation(1)        
+     if(nb_blobs.ne.0) then
+        open(unit=191,file="blob_fcoefs.in")
+        read(191,*) n_blob_coefs
+        allocate(blob_centre(nb_blobs,2),blob_coeffs(nb_blobs,n_blob_coefs),blob_rotation(nb_blobs))
+        do i=1,n_blob_coefs
+           read(191,*) blob_coeffs(1,i)
         end do
+        close(191)
+        blob_coeffs(1,:)=0.0d0;blob_coeffs(1,1)=1.0d0
+        blob_coeffs(1,:) = blob_coeffs(1,:)*h0;blob_rotation(1)=-0.0d0*pi
+
+        ii = 0 
+        do j=1,nbx
+ 
+           if(mod(j,2).eq.0) then !! Even columns
+  
+              do i=1,nby+1
+                 ii = ii+1
+                 blob_centre(ii,:) = (/ -(dble(j-1))*r3o2*S_cyl,S_cyl*(dble(nby)/2.0d0 - dble(i)+1.0d0) /)    
+              end do   
+   
+           else !! Odd columns
+              do i=1,nby
+                 ii = ii+1
+                 blob_centre(ii,:) = (/ -dble(j-1)*r3o2*S_cyl,S_cyl*(0.5d0+dble(nby)/2.0d0 - dble(i)) /)
+              end do    
+           end if
+        
+        end do
+
+        !! Multiple blobs, copy coefficients and orientations from blob 1
+        if(nb_blobs.gt.1)then
+           do i=2,nb_blobs
+              blob_coeffs(i,:) = blob_coeffs(1,:);blob_rotation(i)=blob_rotation(1)        
+           end do
+        end if
+     else
+        n_blob_coefs=6
      end if
 
-
      dxmin = dx0/1.0d0
-     dx_wall=dxmin;dx_in=2.0d0*dx0;dx_out=2.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
+     dx_wall=dxmin;dx_in=4.0d0*dx0;dx_out=4.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
      
 !! ------------------------------------------------------------------------------------------------     
 end select
@@ -554,10 +558,10 @@ end select
   
   !! Write to fort file for quick visualisation
 !!  write(31,*) npfb
-  do i=1,npfb
-     write(31,*) xp(i),yp(i),dxp(i)
-  end do
-  !! Use Octave/Matlab and run  "A=load('fort.31');scatter(A(:,1),A(:,2),10,A(:,3),'filled');colorbar" 
+!  do i=1,npfb
+!     write(31,*) xp(i),yp(i),dxp(i)
+!  end do
+!  !! Use Octave/Matlab and run  "A=load('fort.31');scatter(A(:,1),A(:,2),10,A(:,3),'filled');colorbar" 
   !! from this directory for instant visualisation.
   
   !!
@@ -799,6 +803,17 @@ end subroutine quicksort
 !           r_mag = sqrt(xhat**2.0d0 + yhat**2.0d0)
 !           temp = exp(-(0.5d0*r_mag)**4.0d0)
 !           dxio = dx_out + (dx_in - dx_out)*(1.0d0-temp)
+              
+        !! Over-ride object tests
+        temp = 4.0d0!(xb_max-xb_min)*0.15!4! - 525.0d0*dx0 !! size of refined region
+        tmp2 = -3.0d0!(xb_max+xb_min)*0.5 !! location of refined region
+        tmp2 = x - tmp2 !! Location relative to finest resolution centre
+        if(abs(tmp2).le.temp) then
+           d2b_local=0.0d0
+        else
+           d2b_local=min(min(abs(tmp2-temp),abs(tmp2+temp)),bdist)
+           !   dist2bound=abs(x+0.4)
+        endif    
               
      else if(itest.eq.7) then   
         xhat = x - blob_centre(nb_blobs,1)
