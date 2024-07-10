@@ -135,7 +135,7 @@ case(4) !! Rayleigh-Taylor geometry
 !! ------------------------------------------------------------------------------------------------
 case(5) !! Inflow/outflow tube for simple flames
 
-     yl=0.05d0!0.0125d0  ! channel width
+     yl=0.03d0!0.0125d0  ! channel width
      xl=1.0d0 ! channel length
      dx0=xl/500.0       !15
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
@@ -155,7 +155,7 @@ case(5) !! Inflow/outflow tube for simple flames
 !        blob_coeffs(i,:)=h0*(/1.0d0,0.4d0,0.0d0,0.0d0,0.0d0,0.0d0/);blob_rotation(i)=-pi/9.0d0
 !     end do
 
-     dxmin = dx0/1.0d0
+     dxmin = dx0/2.0d0
      dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=dx0*1.0d0;dx_wallio=dx_in  !! dx for solids and in/outs..
 
      
@@ -289,14 +289,14 @@ case(8) !! Arrays of cylinders for lean H2 flame dynamics tests
 !! ------------------------------------------------------------------------------------------------
 case(9) !! Porous cylinder array
 
-     nbx = 8  !! Number of cylinders along x
-     nby = 8   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
+     nbx = 4  !! Number of cylinders along x
+     nby = 1   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
      nbtot = nbx*nby + nbx/2
 
      D_cyl = 1.0d0;h0 = 0.5d0*D_cyl  !! Cylinder diameter (unity)
-     S_cyl = (5.0d0/4.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
+     S_cyl = (5.0d0/3.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
      yl = dble(max(nby,1))*S_cyl                      !! Channel width 
-     xl = 25.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
+     xl = 10.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
      dx0 = D_cyl/75.0d0                  !! Baseline resolution
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
@@ -306,10 +306,10 @@ case(9) !! Porous cylinder array
      allocate(b_node(nb_patches,2),b_edge(nb_patches,2))
      allocate(b_type(nb_patches))
      b_type(:) = (/ 3, 2, 3, 1/)  
-     b_node(1,:) = (/ -12.0d0*D_cyl, -0.5d0*yl /)
-     b_node(2,:) = (/ -12.0d0*D_cyl+xl, -0.5d0*yl /)
-     b_node(3,:) = (/ -12.0d0*D_cyl+xl, 0.5d0*yl /)
-     b_node(4,:) = (/ -12.0d0*D_cyl, 0.5d0*yl /)
+     b_node(1,:) = (/ -5.0d0*D_cyl, -0.5d0*yl /)   !-12
+     b_node(2,:) = (/ -5.0d0*D_cyl+xl, -0.5d0*yl /)
+     b_node(3,:) = (/ -5.0d0*D_cyl+xl, 0.5d0*yl /)
+     b_node(4,:) = (/ -5.0d0*D_cyl, 0.5d0*yl /)
      nb_blobs=nbtot
      if(nb_blobs.ne.0) then
         open(unit=191,file="blob_fcoefs.in")
@@ -352,7 +352,7 @@ case(9) !! Porous cylinder array
      end if
 
      dxmin = dx0/1.0d0
-     dx_wall=dxmin;dx_in=4.0d0*dx0;dx_out=4.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
+     dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=4.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
      
 !! ------------------------------------------------------------------------------------------------     
 end select
@@ -805,8 +805,8 @@ end subroutine quicksort
 !           dxio = dx_out + (dx_in - dx_out)*(1.0d0-temp)
               
         !! Over-ride object tests
-        temp = 4.0d0!(xb_max-xb_min)*0.15!4! - 525.0d0*dx0 !! size of refined region
-        tmp2 = -3.0d0!(xb_max+xb_min)*0.5 !! location of refined region
+        temp = 0.5d0!4.0d0!(xb_max-xb_min)*0.15!4! - 525.0d0*dx0 !! size of refined region
+        tmp2 = -0.0d0!-3.0d0!(xb_max+xb_min)*0.5 !! location of refined region
         tmp2 = x - tmp2 !! Location relative to finest resolution centre
         if(abs(tmp2).le.temp) then
            d2b_local=0.0d0

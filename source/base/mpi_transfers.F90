@@ -1385,7 +1385,7 @@ contains
      suminhalo = sum(inhalo_LR(1:2*nprocsY)) + sum(inhalo_UD(1:2)) + sum(inhalo_FB(1:2))       
      np = np_nohalo + suminhalo     
         
-     write(6,*) "New halos built",iproc,npfb,np_nohalo,np
+     write(6,*) "New halos built, proc",iproc,"with",npfb,np_nohalo,np
   
      return
   end subroutine refine_halos

@@ -41,7 +41,7 @@ contains
      real(rkind),dimension(:,:),allocatable :: amatx,amaty,amatxx,amatxy,amatyy,amathyp
      real(rkind),dimension(:),allocatable :: bvecx,bvecy,bvecxx,bvecxy,bvecyy,bvechyp,gvec,xvec
      integer(ikind) :: i1,i2,nsize,nsizeG
-     real(rkind) :: ff1,hh,testing,hyp_scal
+     real(rkind) :: ff1,hh,testing
 
 
      !! Set desired order::
@@ -72,7 +72,7 @@ contains
 
      !$OMP PARALLEL DO PRIVATE(i,nsize,amatx,k,j,rij,rad,qq,x,y,xx,yy, &
      !$OMP ff1,gvec,xvec,i1,i2,amatxx,amaty,amatxy,amatyy,bvecx,bvecy,bvecxx,bvecxy,hh, &
-     !$OMP amathyp,bvechyp,bvecyy,hyp_scal)
+     !$OMP amathyp,bvechyp,bvecyy)
      do ii=1,npfb-nb
         i=internal_list(ii) 
         nsize = nsizeG
@@ -176,20 +176,16 @@ contains
         !! Solve system for Hyperviscosity (regular viscosity if order<4)
 #if order<=5
         bvechyp(:)=zero;bvechyp(10)=-one;bvechyp(12)=-two;bvechyp(14)=-one
-        hyp_scal = one/hh/hh/hh/hh        
         i1=0;i2=0;nsize=nsizeG 
 #elif order<=7
         bvechyp(:)=zero;bvechyp(21)=one;bvechyp(23)=3.0d0;bvechyp(25)=3.0d0;bvechyp(27)=one
-        hyp_scal = one/hh/hh/hh/hh/hh/hh        
         i1=0;i2=0;nsize=nsizeG 
 #elif order<=9
         bvechyp(:)=zero;bvechyp(36)=-one;bvechyp(38)=-4.0d0;bvechyp(40)=-6.0d0;bvechyp(42)=-4.0d0;bvechyp(44)=-one
-        hyp_scal = one/hh/hh/hh/hh/hh/hh/hh/hh        
         i1=0;i2=0;nsize=nsizeG    
 #elif order<=11      
         bvechyp(:)=zero;bvechyp(55)=one;bvechyp(57)=5.0d0;bvechyp(59)=10.0d0;bvechyp(61)=10.0d0
         bvechyp(63)=5.0d0;bvechyp(65)=one
-        hyp_scal = one/hh/hh/hh/hh/hh/hh/hh/hh/hh/hh        
         i1=0;i2=0;nsize=nsizeG                             
 #endif
 
@@ -197,7 +193,6 @@ contains
 #if order>=7
         if(node_type(i).eq.998.or.node_type(i).lt.0)then !! for 1,2,3,4, drop to 6th order
            bvechyp(:)=zero;bvechyp(21)=one;bvechyp(23)=3.0d0;bvechyp(25)=3.0d0;bvechyp(27)=one
-           hyp_scal = one/hh/hh/hh/hh/hh/hh
            i1=0;i2=0;nsize=nsizeG 
         end if 
 #endif    
@@ -212,7 +207,12 @@ contains
                  amathyp(i1,i1)=one
               end do
               bvechyp(:)=zero;bvechyp(10)=-one;bvechyp(12)=-two;bvechyp(14)=-one
-              hyp_scal = one/hh/hh/hh/hh
+!if(node_type(fd_parent(i)).eq.0) then
+!              bvechyp(10) = -one!rnorm(i-1,1)
+!              bvechyp(12) = zero
+!              bvechyp(14) = -one!rnorm(i-1,2)
+!end if
+
               i1=0;i2=0;nsize=nsizeG 
 !           end if
         end if 
@@ -247,7 +247,7 @@ contains
            ij_w_grad(1,k,i) = dot_product(bvecx,gvec)/hh
            ij_w_grad(2,k,i) = dot_product(bvecy,gvec)/hh
            ij_w_lap(k,i) = dot_product(bvecxx+bvecyy,gvec)/hh/hh
-           ij_w_hyp(k,i) = dot_product(bvechyp,gvec) !! Note the filter isn't re-scaled, by (1/h)**m
+           ij_w_hyp(k,i) = dot_product(bvechyp,gvec) 
            
         end do             
         
@@ -379,12 +379,18 @@ contains
   subroutine calc_boundary_weights
      !! Calculates weights for derivatives near boundaries.
      !! Stencil contains boundary node i0, and 4 rows i1,i2,i3,i4
-     !! For i3,i4 - everything LABFM, order<=6
-     !! For i2 - everything LABFM, order=4
-     !! For i1 - 2nd derivs and hyp are LABFM, order=4, gradients are FD+1D-LABFM
-     !! For i0 - everything is FD+1D-LABFM
      !! All FD are in boundary normal direction, using 5 point stencils.
      !! All 1D-LABFM are used in boundary tangent direction, and are 6th order
+     !!
+     !! NODE   | grad (N)  | grad (T)  | LAP        | FILT
+     !!  i0    |   FD      | 1DLABFM   | FD+1DLABFM | FD+1DLABFM
+     !!  i1    |   FD      | 1DLABFM   | FD+1DLABFM | LABFM m=4
+     !!  i2    | LABFM m=4 | LABFM m=4 | LABFM m=4  | FD+1DLABFM
+     !!  i3    | LABFM m=6 | LABFM m=6 | LABFM m=6  | LABFM m=6
+     !!  i4    | LABFM m=6 | LABFM m=6 | LABFM m=6  | LABFM m=6
+     !! other  | LABFM m=8 | LABFM m=8 | LABFM m=8  | LABFM m=8    
+     
+     
      integer(ikind) :: i,j,k,nsize,nsizeG,i1,i2,is,ie,irow,ii,jj,kk
      integer(ikind) :: im1,im2,ip1,ip2
      real(rkind) :: rad,qq,xt,yt,ff1,xn,yn,tmp_n,tmp_t,dx2,dx4,tmp1,x,y,tmp2,dx
@@ -478,7 +484,7 @@ contains
      do jj=1,nb   !! inefficient at the moment: loop all nodes, cycle those not in correct row...
         i=boundary_list(jj)+1
         dx = s(i)     
-        ij_w_grad(:,:,i) = zero!;ij_w_lap(:,i) = zero!;ij_w_hyp(:,i)=zero      
+        ij_w_grad(:,:,i) = zero;ij_w_lap(:,i) = zero!;ij_w_hyp(:,i)=zero      
         do k=1,ij_count(i)
            j=ij_link(k,i)   
            if(j.gt.npfb) cycle !! Eliminate halos and ghosts from search (entire FD stencil in one processor)              
@@ -489,13 +495,12 @@ contains
            if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_grad(1,k,i) = -half/dx              
            if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_grad(1,k,i) =  one/12.0d0/dx       
 
-!           if(j.eq.fd_parent(i))                                   ij_w_lap(k,i) =  11.0d0/12.0d0/dx2     !! SECON DERIV
-!           if(j.eq.i)                                              ij_w_lap(k,i) =  zero
-!           if(node_type(j).eq.-2.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  6.0d0/12.0d0/dx2
-!           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  four/12.0d0/dx2              
-!           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) = -one/12.0d0/dx2       
-          
-           
+           if(j.eq.fd_parent(i))                                   ij_w_lap(k,i) =  11.0d0/12.0d0/dx2     !! SECON DERIV
+           if(j.eq.i)                                              ij_w_lap(k,i) =  zero
+           if(node_type(j).eq.-2.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  6.0d0/12.0d0/dx2
+           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  four/12.0d0/dx2              
+           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) = -one/12.0d0/dx2       
+                    
 !           if(j.eq.fd_parent(i))                                   ij_w_hyp(k,i) = -one   !! 4th DERIV
 !           if(j.eq.i)                                              ij_w_hyp(k,i) =  zero
 !           if(node_type(j).eq.-2.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) = -6.0d0
@@ -504,6 +509,24 @@ contains
                      
         end do 
      end do       
+     
+     !! Second row normal filter
+     do jj=1,nb   !! inefficient at the moment: loop all nodes, cycle those not in correct row...
+        i=boundary_list(jj)+2
+        dx = s(i)     
+        ij_w_hyp(:,i)=zero      
+        do k=1,ij_count(i)
+           j=ij_link(k,i)   
+           if(j.gt.npfb) cycle !! Eliminate halos and ghosts from search (entire FD stencil in one processor)         
+
+           if(j.eq.fd_parent(i))                                   ij_w_hyp(k,i) = -one   !! 4th DERIV
+           if(node_type(j).eq.-1.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) =  4.0d0
+           if(j.eq.i)                                              ij_w_hyp(k,i) =  zero
+           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) =  4.0d0
+           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) = -one    
+                     
+        end do 
+     end do      
 
 
      !! PART 2: Transverse derivatives (in X-Y plane) (one-dimensional LABFM, 6th order)   
@@ -533,7 +556,7 @@ contains
               y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
               if(i.eq.j) x=zero !! avoid NaN in above line         
            
-              xvec(1:nsizeG) = monomials1D(x)
+              xvec(1:nsizeG) = monomials1D(x/h(i))
               
               ff1 = fac(abs(x/h(i)))
               x = x/h(i)
@@ -579,8 +602,8 @@ contains
                             
 
               !! Weights for grad,grad2 and hyp
-              ij_w_grad(2,k,i) = dot_product(bvect,gvec)               
-              ij_wb_grad2(2,k,jj) = dot_product(bvectt,gvec) 
+              ij_w_grad(2,k,i) = dot_product(bvect,gvec)/h(i)              
+              ij_wb_grad2(2,k,jj) = dot_product(bvectt,gvec)/h(i)/h(i) 
               ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)                            
            end if    
            
@@ -589,7 +612,7 @@ contains
      end do         
      
      
-     !! First rows: set gradients only
+     !! First rows: set gradients and laplacians
      do i=1,npfb
         if(node_type(i).eq.-1) then
         
@@ -627,7 +650,7 @@ contains
                  y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
                  if(i.eq.j) x=zero !! avoid NaN in above line         
            
-                 xvec(1:nsizeG) = monomials1D(x)
+                 xvec(1:nsizeG) = monomials1D(x/h(i))
                
                  ff1 = fac(abs(x/h(i)))
                  x = x/h(i)
@@ -652,7 +675,7 @@ contains
            call svd_solve(amattt,nsize,bvectt)           
            
            !! Solve system for transverse hyperviscous filter
-           bvecthyp(:)=zero;bvecthyp(4)=-s(i)**four;i1=0;i2=0;nsize=nsizeG
+           bvecthyp(:)=zero;bvecthyp(6)=one;i1=0;i2=0;nsize=nsizeG
            call svd_solve(amatthyp,nsize,bvecthyp)                                         
 
            do k=1,ij_count(i)
@@ -672,8 +695,8 @@ contains
                  gvec(1:nsizeG) = abfs1D(x,ff1)
               
                  !! Gradient and hyperviscous weights
-                 ij_w_grad(2,k,i) = dot_product(bvect,gvec)
-!                 ij_w_lap(k,i) = ij_w_lap(k,i) + dot_product(bvectt,gvec) 
+                 ij_w_grad(2,k,i) = dot_product(bvect,gvec)/h(i)
+                 ij_w_lap(k,i) = ij_w_lap(k,i) + dot_product(bvectt,gvec)/h(i)/h(i)
 !                 ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)                                          
               
               end if    
@@ -690,6 +713,75 @@ contains
         end if
      end do
      
+     !! Second rows: filter only
+     do i=1,npfb
+        if(node_type(i).eq.-2) then
+        
+                   
+           amatt=zero;xvec = zero;gvec = zero
+           bvecthyp=zero     
+           xt=-rnorm(i,2);yt=rnorm(i,1)  !! unit tangent vector
+           xn=rnorm(i,1);yn=rnorm(i,2)  !! unit normal vector
+           
+           !! Rotate tangent vector to account for resolution gradient
+           xt = cos(grads)*(-rnorm(i,2)) - sin(grads)*rnorm(i,1)
+           yt = sin(grads)*(-rnorm(i,2)) + cos(grads)*rnorm(i,1)
+           
+           do k=1,ij_count(i)
+              j=ij_link(k,i)                   
+
+              ii=node_type(j)
+              if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
+           
+                 rij = rp(i,:)-rp(j,:)  !! ij-vector
+                 x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
+                 y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
+                 if(i.eq.j) x=zero !! avoid NaN in above line         
+           
+                 xvec(1:nsizeG) = monomials1D(x/h(i))
+               
+                 ff1 = fac(abs(x/h(i)))
+                 x = x/h(i)
+           
+                 gvec(1:nsizeG) = abfs1D(x,ff1)
+                      
+                 do i1=1,nsizeG
+                    do i2=1,nsizeG
+                       amatt(i1,i2) = amatt(i1,i2) + xvec(i1)*gvec(i2)
+                    end do
+                 end do            
+              end if        
+           end do
+
+           !! Solve system for transverse hyperviscous filter
+           bvecthyp(:)=zero;bvecthyp(6)=one;i1=0;i2=0;nsize=nsizeG
+           call svd_solve(amatt,nsize,bvecthyp)                                         
+
+           do k=1,ij_count(i)
+              j=ij_link(k,i)                   
+
+              !! Transverse derivatives...
+              ii=node_type(j)
+              if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
+                 rij = rp(i,:)-rp(j,:)  !! ij-vector
+                 x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
+                 y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
+                 if(i.eq.j) x=zero !! avoid NaN in above line              
+              
+                 ff1 = fac(abs(x/h(i)))
+                 x = x/h(i)
+           
+                 gvec(1:nsizeG) = abfs1D(x,ff1)
+              
+                 !! Gradient and hyperviscous weights
+                 ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)                                          
+              
+              end if    
+           
+           end do
+                      
+        end if
+     end do     
     
        
      !! Clear 1D labfm vectors and matrices       
@@ -723,6 +815,14 @@ contains
            ij_w_grad(:,:,i)=-ij_w_grad(:,:,i)    !! Reverse first derivative weights
         end if
      end do         
+          
+     !! First row, add divergence term to Laplacian
+     do jj=1,nb
+        i=boundary_list(jj) + 1
+        if(node_type(i-1).eq.0) then
+           ij_w_lap(:,i) = ij_w_lap(:,i) + ij_w_grad(1,:,i)*ooRcurve(jj)/(one+ooRcurve(jj)*s(i))
+        end if
+     end do     
           
      !! Wall boundary: map grad2 and laplacian onto orthog. boundary oriented coords.
      do jj=1,nb  
@@ -1139,7 +1239,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
         !! Reduce the filter coefficient near boundaries        
         if(node_type(i).lt.0) then
            if(node_type(fd_parent(i)).eq.0) then !! Walls only
-              if(node_type(i).eq.-1) filter_coeff(i) = filter_coeff(i)*half*oosqrt2!*half*half
+              if(node_type(i).eq.-1) filter_coeff(i) = filter_coeff(i)*oosqrt2!*half!*half
               if(node_type(i).eq.-2) filter_coeff(i) = filter_coeff(i)*half!*oosqrt2
               if(node_type(i).eq.-3) filter_coeff(i) = filter_coeff(i)*oosqrt2!*half
               if(node_type(i).eq.-4.or.node_type(i).eq.998) filter_coeff(i) = filter_coeff(i)*oosqrt2!*half 
@@ -1150,7 +1250,8 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
      end do
      !$omp end parallel do
 
-     !! For boundary nodes...
+     !! For boundary nodes... we're only filtering tangentially, the stencil only includes other boundary nodes
+     !! and the test function can be univariate function of Euclidean distance (approx).
      !$omp parallel do private(i,lscal,tmp,k,j,rij,x,y,fji,lsum)
      do ii=1,nb
         i=boundary_list(ii)
@@ -1167,8 +1268,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
            j = ij_link(k,i)
            rij = rp(j,:)-rp(i,:)
            x=rij(1);y=rij(2)     
-  
-           fji = one - cos(tmp*y)*cos(tmp*x)
+           fji = one - cos(tmp*sqrt(x*x+y*y))!*cos(tmp*x)
            lsum = lsum + fji*ij_w_hyp(k,i)
         end do
         filter_coeff(i) = (one/3.0d0)/lsum  !(two/3.0d0)
@@ -1186,7 +1286,6 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
            ij_w_hyp(k,i) = ij_w_hyp(k,i)*filter_coeff(i)
            ij_w_hyp_sum(i) = ij_w_hyp_sum(i) + ij_w_hyp(k,i)
         end do
-        
      end do
      !$omp end parallel do
     

@@ -18,9 +18,9 @@ module setup_flow
   use turbulence
   implicit none
   
-  integer(ikind), parameter :: n_modes=8
+  integer(ikind), parameter :: n_modes=4
   real(rkind),dimension(n_modes) :: mode_amp,mode_phase
-  real(rkind), parameter :: ptbn_size = half   !! perturbation size in multiples of fl_thck
+  real(rkind), parameter :: ptbn_size = two*half   !! perturbation size in multiples of fl_thck
   
 contains
 !! ------------------------------------------------------------------------------------------------
