@@ -21,7 +21,7 @@ module inputoutput
   real(rkind),parameter :: hovs_local = 2.5d0
   
   real(rkind),parameter :: coef_diffusion=0.2d0 !0.4d0
-  integer(ikind),parameter :: maxiters_diffusion = 200
+  integer(ikind),parameter :: maxiters_diffusion = 1000
   integer(ikind) :: nbw,nbio
   integer(ikind),parameter :: nrio=4
   integer(ikind),parameter :: nrw=4  !! Number of rows
@@ -467,7 +467,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         
         end do     
      
-        if(.false.)then
+        if(.true.)then
            !! Evaluate mean and variance:
            meanband = 0
            varband = 0
@@ -511,7 +511,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      !! load balancing.
      integer(ikind),intent(in) :: nband_start,nband_size
      integer(ikind) :: i,kk,nband_mean,nl_ini,nl_end,ii,ll,j
-     integer(ikind) :: nshift
+     integer(ikind) :: nshift,meanblock,varblock
      logical :: keepgoing  
          
     
@@ -553,7 +553,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         !! Exchange nodes between blocks        
         do kk=1,nprocsY-1
            !! Amount to exchange between blocks
-           ll = coef_diffusion*(effective_nblock(kk+1)-effective_nblock(kk))
+           ll = 0.1d0*(effective_nblock(kk+1)-effective_nblock(kk))
            nblock(kk) = nblock(kk) + ll
            nblock(kk+1) = nblock(kk+1) - ll
         end do
@@ -583,8 +583,27 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         
         end do     
         
+
+        if(.true.)then
+           !! Evaluate mean and variance:
+           meanblock = 0
+           varblock = 0
+           do kk=1,nprocsY
+              meanblock = meanblock + effective_nblock(kk)
+           end do
+           meanblock = floor(dble(meanblock)/dble(nprocsY))
+           do kk=1,nprocsY
+              varblock = varblock + (effective_nblock(kk)-meanblock)**2
+           end do
+           varblock = floor(sqrt(dble(varblock)/dble(nprocsY)))
+        
+           write(6,*) "Iteration number, mean and variance:",j,meanblock,varblock
+        end if        
+        
+        
         j=j+1
-        if(j.gt.maxiters_diffusion) keepgoing=.false.     
+        if(j.gt.maxiters_diffusion) keepgoing=.false.  
+        if(varblock.le.10) keepgoing=.false.   
 
      
      end do
