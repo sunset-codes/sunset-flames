@@ -22,6 +22,11 @@ module chemistry
   use thermodynamics
   use omp_lib
   implicit none
+  
+  private
+  public :: calculate_chemical_production_rate
+  
+  real(rkind) :: segment_tstart,segment_tend
 
 
 contains
@@ -229,6 +234,10 @@ contains
         
            !! Convert from molar to mass production rate
            rateYspec(i,ispec) = rateYspec(i,ispec)*molar_mass(ispec)
+#ifdef rrspecial
+           !! Extra modifications for certain mechanisms.
+           rateYspec(i,ispec) = rateYspec(i,ispec)*ro(i)
+#endif                      
         
            !! Augment the RHS of Yspec for species ispec
            rhs_Yspec(i,ispec) = rhs_Yspec(i,ispec) + rateYspec(i,ispec)           
@@ -276,7 +285,7 @@ contains
   
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(6) = segment_time_local(6) + segment_tend - segment_tstart  
+     segment_time_local(4) = segment_time_local(4) + segment_tend - segment_tstart  
 
 #else
      !! Dummy routine if we want to compile with react, but suppress chemical reactions (i.e. for
@@ -291,7 +300,7 @@ contains
        
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(6) = segment_time_local(6) + segment_tend - segment_tstart    
+     segment_time_local(4) = segment_time_local(4) + segment_tend - segment_tstart    
 #endif  
      return
   end subroutine calculate_chemical_production_rate  

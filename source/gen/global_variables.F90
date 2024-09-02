@@ -25,8 +25,8 @@
       real(rkind),dimension(:),allocatable :: Sblob
     
       !! Parameters to control changing resolution  
-      real(rkind),parameter :: b0 = 4.0d0
-      real(rkind),parameter :: b1 = 40.0d0
+      real(rkind),parameter :: b0 = 3.0d0
+      real(rkind),parameter :: b1 = 20.0d0
       real(rkind),parameter :: b2 = 50.0d0        
 
 

@@ -74,12 +74,11 @@ contains
      real(rkind),dimension(dims) :: rij
      real(rkind),dimension(:,:),allocatable :: tmp_vec
      integer(ikind) :: nl_ini,nl_end,nl_iniC,nl_endC,nl_ini2,nl_end2
-     real(rkind) :: smin
 
      !! STEP 1: Load IPART (some params, plus list of nodes + boundary normals)
      !! =======================================================================
      open(13,file='IPART')
-     read(13,*) nb,npfb,dummy      !! dummy is largest s(i) in domain...
+     read(13,*) nb,npfb,dummy,smin      !! dummy is largest s(i) in domain...
      read(13,*) xmin,xmax,ymin,ymax
 
      !! Set the domain lengths
@@ -90,7 +89,7 @@ contains
      
      read(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
      !! Calculate some useful constants
-     h0 = hovs*dummy;sup_size = ss*h0;h2=h0*h0;h3=h2*h0
+     smax = dummy;h0 = hovs*dummy;sup_size = ss*h0;h2=h0*h0;h3=h2*h0
          
 #ifdef mp
 

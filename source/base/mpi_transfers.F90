@@ -76,7 +76,8 @@ contains
      !! mpi, it does nothing
      integer(ikind) :: ispec
      real(rkind) :: tsum
-          
+     real(rkind) :: segment_tstart,segment_tend          
+     
      segment_tstart = omp_get_wtime()
 #ifdef mp
      !! Superfluous barrier <-- allows me to distinguish between MPI comms and waiting time when profiling.
@@ -84,7 +85,7 @@ contains
 #endif
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(10) = segment_time_local(10) + segment_tend - segment_tstart
+     segment_time_local(12) = segment_time_local(12) + segment_tend - segment_tstart
      segment_tstart = omp_get_wtime()
 
 #ifdef mp 
@@ -120,12 +121,13 @@ contains
 
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(1) = segment_time_local(1) + segment_tend - segment_tstart
+     segment_time_local(11) = segment_time_local(11) + segment_tend - segment_tstart
      
      return
   end subroutine halo_exchanges_all
 !! ------------------------------------------------------------------------------------------------
-  subroutine halo_exchange_divvel  
+  subroutine halo_exchange_divvel 
+     real(rkind) :: segment_tstart,segment_tend   
      !! If using mpi, this calls routines to transfer divvel between halos. If not using
      !! mpi, it does nothing
 
@@ -136,7 +138,7 @@ contains
 #endif
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(10) = segment_time_local(10) + segment_tend - segment_tstart
+     segment_time_local(12) = segment_time_local(12) + segment_tend - segment_tstart
      segment_tstart = omp_get_wtime()
           
 #ifdef mp 
@@ -147,7 +149,7 @@ contains
 
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(1) = segment_time_local(1) + segment_tend - segment_tstart
+     segment_time_local(11) = segment_time_local(11) + segment_tend - segment_tstart
      return
   end subroutine halo_exchange_divvel
 #ifdef mp  
@@ -1519,6 +1521,7 @@ contains
      !! Routine to perform MPI reductions. If not using mpi, it does nothing.
      real(rkind),intent(inout) :: phi
      real(rkind) :: phi_local
+     real(rkind) :: segment_tstart,segment_tend               
      segment_tstart = omp_get_wtime()     
      
      !! Copy phi to local
@@ -1537,6 +1540,7 @@ contains
      !! Routine to perform MPI reductions. If not using mpi, it does nothing.
      real(rkind),intent(inout) :: phi
      real(rkind) :: phi_local
+     real(rkind) :: segment_tstart,segment_tend               
      segment_tstart = omp_get_wtime()     
      
      !! Copy phi to local
@@ -1556,6 +1560,7 @@ contains
      !! Routine to perform MPI reductions. If not using mpi, it does nothing.
      real(rkind),intent(inout) :: phi
      real(rkind) :: phi_local
+     real(rkind) :: segment_tstart,segment_tend               
      segment_tstart = omp_get_wtime()     
      
      !! Copy phi to local

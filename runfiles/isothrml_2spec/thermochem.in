@@ -1,0 +1,37 @@
+!! Thermochemical transport and chemical kinetics control data
+
+!! Number of chemical species
+2
+
+!! Number of coefficients
+3
+
+!! Temperature limits
+1.0d0 1.0d5
+
+!! Gibbs reference pressure
+1.0d5
+
+!! Molar mass, Lewis number and polynomial fit of each species ------------------------------------
+!! Species 1 - Doesn't matter, as won't be used
+1.0d0  
+1.0d0  !! Lewis
+! polynomial coefs 
+ 1.0000d+00
+ 0.0000000d+00
+ 0.0000000d+00
+
+!! Species 2 - as species 1
+1.0d0
+1.0d0
+! polynomial coefs 
+ 1.0000d+00
+ 0.0000000d+00
+ 0.0000000d+00
+
+!! Data on reaction mechanism ---------------------------------------------------------------------
+!! Number of steps  
+0
+
+
+

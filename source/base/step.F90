@@ -31,6 +31,7 @@ module step
   real(rkind) :: enrm_ro,enrm_rou,enrm_rov,enrm_E,enrm_row
   real(rkind),dimension(nspec_max) :: enrm_Yspec
   real(rkind), parameter :: outflow_error_scaling=1.0d0 !! Scaling factor for errors on in/out flows
+  real(rkind) :: segment_tstart,segment_tend
 
 
 contains
@@ -52,6 +53,9 @@ contains
      real(rkind),dimension(:,:),allocatable :: Yspec_reg1
      real(rkind),dimension(3) :: RKa
      real(rkind),dimension(4) :: RKb,RKc
+
+     !! Profiling 
+     segment_tstart = omp_get_wtime()
          
      !! Set RKa,RKb with dt (avoids multiplying by dt on per-node basis)
      RKa(:) = dt*rk3_4s_2r_a(:)
@@ -188,6 +192,9 @@ contains
      call reapply_mirror_bcs_divvel_only
      call halo_exchange_divvel     
 
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart
 
      return
   end subroutine step_rk3_4S_2R
@@ -214,7 +221,6 @@ contains
      !! 3rd order 4step 2 register Runge Kutta, with embedded 2nd order
      !! scheme for error estimation.     
      !! RK3(2)4[2R+]C Kennedy (2000) Appl. Num. Math. 35:177-219
-     !! 'U' and 'S' in comments relate to p31 of Senga2 user guide
      !! Implemented over three registers, because speed is more
      !! important than memory at present.    
      
@@ -229,6 +235,8 @@ contains
      real(rkind),dimension(:,:),allocatable :: Yspec_reg1,e_acc_Yspec
      real(rkind),dimension(3) :: RKa
      real(rkind),dimension(4) :: RKb,RKbmbh,RKc
+     
+     segment_tstart = omp_get_wtime()     
      
      !! Push the max error storage back one
      emax_nm1 = emax_n;emax_n=emax_np1
@@ -453,6 +461,10 @@ contains
      call reapply_mirror_bcs_divvel_only
      call halo_exchange_divvel        
 
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart
+
      return
   end subroutine step_rk3_4S_2R_EE  
 !! ------------------------------------------------------------------------------------------------
@@ -462,6 +474,8 @@ contains
      integer(ikind) :: i
      real(rkind) :: dt_visc,dt_therm,dt_spec  
      real(rkind) :: c,uplusc
+         
+     segment_tstart = omp_get_wtime()         
          
      call evaluate_temperature_and_pressure
      call evaluate_transport_properties   
@@ -547,6 +561,10 @@ contains
 #endif     
 #endif     
 
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart 
+
      return
   end subroutine set_tstep
 !! ------------------------------------------------------------------------------------------------  
@@ -558,6 +576,7 @@ contains
      real(rkind) :: facA,facB,facC
      real(rkind) :: dt_max
         
+     segment_tstart = omp_get_wtime()        
                   
 #ifdef mp     
      !! Parallel transfer to obtain the global maximum error          
@@ -600,6 +619,9 @@ contains
      flush(192)         
 #endif 
  
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart 
 
      return
   end subroutine set_tstep_PID

@@ -36,7 +36,7 @@ program sunset
   call load_control_data_LUonly   
   call initial_setup  
   call build_domain
-
+  
   !! Adapt the stencils by reducing h (only if not restarting)
 #ifndef restart  
   call adapt_stencils
@@ -60,9 +60,9 @@ program sunset
   
   !! Load data 
   call load_control_data_all
-#ifndef isoT
+!#ifndef isoT
   call load_chemistry_data
-#endif  
+!#endif  
   if(flag_mix_av.eq.1) call load_transport_file
 
   !! Set initial fields
@@ -81,7 +81,7 @@ program sunset
 
      !! Output, conditionally: at start, subsequently every dt_out
      if(itime.eq.0.or.time.gt.n_out*dt_out) then 
-!     if(itime.eq.0.or.mod(itime,100).eq.0)then
+!     if(itime.eq.0.or.mod(itime,1).eq.0)then  !! For debugging, comment line above, and uncomment/modify this line
         n_out = n_out + 1
         call output_layer(n_out)        
         call output_laminar_flame_structure(n_out)
@@ -106,7 +106,7 @@ program sunset
 
      !! Profiling and write some things to screen
      segment_tend_main = omp_get_wtime()
-     segment_time_local(11) = segment_time_local(11) + segment_tend_main - segment_tstart_main
+     segment_time_local(1) = segment_time_local(1) + segment_tend_main - segment_tstart_main
      itime = itime + 1
      call output_to_screen
 
@@ -148,6 +148,9 @@ subroutine deallocate_everything
   deallocate(lambda_th)
 #endif
   deallocate(roMdiff)
+#ifdef sorduf
+  deallocate(tdr)
+#endif
 
   !! Neighbours lists and link lists
   deallocate(ij_count,ij_link)
@@ -171,7 +174,7 @@ subroutine deallocate_everything
   if(allocated(molar_mass)) deallocate(molar_mass,one_over_molar_mass)
   if(allocated(one_over_Lewis_number)) deallocate(one_over_Lewis_number)
   
-  if(flag_mix_av.eq.1) deallocate(mxav_coef_visc,mxav_coef_lambda,mxav_coef_diff)
+  if(flag_mix_av.eq.1) deallocate(mxav_coef_visc,mxav_coef_lambda,mxav_coef_diff,mxav_coef_tdr)
   
   
   return

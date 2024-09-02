@@ -16,6 +16,7 @@ module characteristic_boundaries
   !! SK03: Sutherland & Kennedy (2003) 
   !! YI07: Yoo & Im (2007)             
   
+  !! For profiling, this routine module is subsumed into RHS and STEP (for now)
   !! 
   use kind_parameters
   use common_parameter
@@ -406,9 +407,7 @@ contains
 !! ------------------------------------------------------------------------------------------------
   subroutine apply_time_dependent_bounds
      integer(ikind) :: i,j,ispec
-     
-     segment_tstart = omp_get_wtime()
-     
+          
      !! Update time-dependant inflow velocity
      call update_u_inflow
                      
@@ -482,10 +481,6 @@ contains
         end do
         !$omp end parallel do     
      endif           
-
-     !! Profiling
-     segment_tend = omp_get_wtime()
-     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart  
   
      return
   end subroutine apply_time_dependent_bounds 

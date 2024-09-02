@@ -270,6 +270,7 @@ contains
     !! This routine sorts the neighbour list in order of increasing distance.
     integer(ikind) :: i,j,k
     real(rkind),dimension(dims) :: rij
+    real(rkind) :: rad2
     real(rkind),dimension(:),allocatable :: rij2
   
     !! Allocate space for rij2
@@ -283,13 +284,23 @@ contains
        rij2 = zero
        do k=1,ij_count(i)
           j=ij_link(k,i)
-!          rij = rp(i,:) - rp(j,:)
-!          rij2(k) = dot_product(rij,rij)
-          rij2(k) = dble(j)
+          rij = rp(i,:) - rp(j,:)
+          rij2(k) = dot_product(rij,rij)
+!          rij2(k) = dble(j)
        end do
        
        !! Now sort by value of rij2
        call quicksort_neighbours(i,rij2,1,ij_count(i))       
+    
+       keepgoing = .true.
+       k=0
+       do while(keepgoing.and.k.le.ij_count(i,pmax))
+          k=k+1
+          j=ij_link(k,i)
+          rij = rp(i,:) - rp(j,:)
+          rad2 = dot_product(rij,rij)
+              
+    
     
     
     end do

@@ -1,0 +1,863 @@
+!! Thermochemical transport and chemical kinetics control data
+
+!! Number of chemical species
+19
+
+!! Number of coefficients
+10
+
+!! Temperature limits
+3.0d2 5.0d3
+
+!! Gibbs reference pressure
+1.0d5
+
+!! Molar mass, Lewis number and polynomial fit of each species ------------------------------------
+!! Species 1 - H2
+2.0000d+00
+0.3d0
+! polynomial coefs 
+ 3.3512000d+00
+ 5.7187094d-04
+-1.0119157d-06
+ 1.2468205d-09
+-6.6394758d-13
+ 1.7682474d-16
+-2.3344954d-20
+ 1.2198609d-24
+-1.0162497d+03
+-3.5161494d+00
+
+!! Species 2 - O2
+3.2000d+01
+1.11d0
+! polynomial coefs 
+ 3.1818118d+00
+ 1.1351666d-03
+ 4.3312316d-07
+-1.0296515d-09
+ 6.0211723d-13
+-1.6623000d-16
+ 2.2390863d-20
+-1.1847361d-24
+-1.0026846d+03
+ 6.1765995d+00
+
+!! Species 3 - H2O
+1.8000d+01
+0.83d0
+! polynomial coefs 
+ 3.6830475d+00
+ 7.3151111d-04
+ 1.0056999d-06
+-4.8377150d-10
+ 1.0392681d-14
+ 3.5087698d-17
+-7.7586063d-21
+ 5.1471626d-25
+-3.0225353d+04
+ 1.4612747d+00
+
+!! Species 4 - O
+1.6000d+01
+0.7d0
+! polynomial coefs 
+ 2.9143497d+00
+-1.3873735d-03
+ 1.9290560d-06
+-1.3919428d-09
+ 5.6050586d-13
+-1.2661381d-16
+ 1.5012407d-20
+-7.2707333d-25
+ 2.9149632d+04
+ 3.0900790d+00
+
+!! Species 5 - OH
+1.7000d+01
+0.73d0
+! polynomial coefs 
+ 3.7892194d+00
+-1.1605619d-03
+ 1.7103220d-06
+-7.8149461d-10
+ 1.4597569d-13
+-3.1048560d-18
+-2.3771065d-21
+ 2.2025493d-25
+ 3.5977698d+03
+ 7.7461365d-01
+
+!! Species 6 - H
+1.0000d+00
+1.8d-1
+! polynomial coefs 
+ 2.5000000d+00
+ 0.0d0
+ 0.0d0
+ 0.0d0
+ 0.0d0
+ 0.0d0
+ 0.0d0
+ 0.0d0
+ 2.5471620d+04
+-4.6011760d-01
+
+!! Species 7 - HO2
+3.3000d+01
+1.1d0
+! polynomial coefs 
+ 2.9549971d+00
+ 5.1127880d-03
+-3.6881236d-06
+ 1.7969870d-09
+-5.4224916d-13
+ 9.5341490d-17
+-8.9173502d-21
+ 3.4152703d-25
+ 1.7798990d+02
+ 9.3273402d+00
+
+!! Species 8 - N
+1.400d+01
+1.0d0
+! polynomial coefs 
+ 2.5042549e+00
+-2.8340861e-05
+ 5.7776986e-08
+-4.7569360e-11
+ 1.7301878e-14
+-2.7639129e-18
+ 2.0517118e-22
+-5.3479176e-27
+ 5.6098823e+04
+ 4.1626813e+00
+
+!! Species 9 - N2
+2.8000d+01
+1.0d0
+! polynomial coefs 
+ 3.4894792d+00
+-6.0553535d-04
+ 2.3465049d-06
+-1.9369826d-09
+ 7.8281037d-13
+-1.7208407d-16
+ 1.9751725d-20
+-9.2874973d-25
+-1.0313475d+03
+ 3.2435865d+00
+
+!! Species 10 - NO
+3.000d+01
+1.0d0
+! polynomial coefs
+ 3.5198665e+00
+-4.2397113e-04
+ 2.4815776e-06
+-2.3164988e-09
+ 1.0244413e-12
+-2.4193770e-16
+ 2.9424691e-20
+-1.4497533e-24
+ 9.8105528e+03
+ 5.3122862e+00
+
+!! Species 11 - NH
+1.500d+01
+1.0d0
+! polynomial coefs
+ 3.5300172e+00
+-5.1662717e-04
+ 1.2846098e-06
+-6.6580343e-10
+ 1.4131860e-13
+-6.8529046e-18
+-1.6107072e-21
+ 1.7159569e-25
+ 4.1839417e+04
+ 1.7826525e+00
+
+!! Species 12 - HNO
+3.100d+01
+1.0d0
+! polynomial coefs
+ 2.9863480e+00
+ 4.3573562e-03
+-1.8638952e-06
+ 1.8822996e-10
+ 1.2714162e-13
+-5.1999872e-17
+ 7.8492118e-21
+-4.4032944e-25
+ 1.0908046e+04
+ 8.2974927e+00
+
+!! Species 13 - NH2
+1.600d+01
+1.0d0
+! polynomial coefs
+ 3.7242935e+00
+ 2.9359881e-04
+ 2.5654596e-06
+-2.1535681e-09
+ 8.4930345e-13
+-1.8117365e-16
+ 2.0149457e-20
+-9.2106444e-25
+ 2.1756092e+04
+ 2.0030669e+00
+
+!! Species 14 - H2NO
+3.200d+01
+1.0d0
+! polynomial coefs
+ 2.5859398e+00
+ 8.0968713e-03
+-4.1957787e-06
+ 1.0509802e-09
+-2.6495442e-14
+-4.9138530e-17
+ 1.0212759e-20
+-6.1696650e-25
+ 6.8647743e+03
+ 1.1054667e+01
+
+!! Species 15 - N2H
+2.900d+01
+1.0d0
+! polynomial coefs
+ 3.7337163e+00
+ 9.7445027e-04
+ 3.7117612e-06
+-4.3090152e-09
+ 2.0935567e-12
+-5.2650615e-16
+ 6.7149195e-20
+-3.4326381e-24
+ 2.8827106e+04
+ 5.2944680e+00
+
+!! Species 16 - NH3
+1.700d+01
+1.0d0
+! polynomial coefs
+ 2.6422308e+00
+ 5.8107284e-03
+-2.2031924e-06
+ 7.9560277e-10
+-3.2506262e-13
+ 8.9731188e-17
+-1.2665748e-20
+ 6.9509056e-25
+-6.5503124e+03
+ 6.4786954e+00
+
+!! Species 17 - N2O
+4.400d+01
+1.0d0
+! polynomial coefs
+ 2.5604476e+00
+ 9.2261930e-03
+-8.7134940e-06
+ 4.8906136e-09
+-1.6676527e-12
+ 3.3561674e-16
+-3.6422042e-20
+ 1.6361926e-24
+ 8.7643713e+03
+ 9.4534566e+00
+
+!! Species 18 - H2O2
+3.4000d+01
+1.12d0
+! polynomial coefs 
+ 3.1917146d+00
+ 8.6738449d-03
+-6.8854272d-06
+ 3.7407393d-09
+-1.2997270d-12
+ 2.6876074d-16
+-2.9869884d-20
+ 1.3689408d-24
+-1.7652419d+04
+ 7.5136804d+00
+
+!! Species 19 - NO2
+4.600d+01
+1.0d0
+! polynomial coefs 
+ 2.6694924e+00
+ 7.5172761e-03
+-6.0002861e-06
+ 2.6684855e-09
+-6.8785081e-13
+ 9.9250560e-17
+-7.0225917e-21
+ 1.6156878e-25
+ 2.8972451e+03
+ 1.1643615e+01
+
+!! Data on reaction mechanism ---------------------------------------------------------------------
+!! Number of steps
+41
+
+!! Number of different third body efficiencies?
+3
+
+!! Chemical mechanism step list
+1         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+8 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.47d10 0.3d0 3.1521d8  !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+2         !! Reaction number
+2         !! Number of reactants
+2 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+8 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+4 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+5.40d6 1.0d0 2.6418d7  !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+3         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+8 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.80d10 0.0d0 0.0d0 !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+4         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+1 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+8 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.0d11 0.0d0 0.0d0 !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+5         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9.20d10 0.0d0 0.0d0 !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+6         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+4 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+4.00d10 0.0d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+7         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+8 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+5.0d8 0.5d0 8.3756d6               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+8         !! Reaction number
+2         !! Number of reactants
+2 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+4 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+4.00d2 2.0d0  2.7218d7              !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+9         !! Reaction number
+2         !! Number of reactants
+10 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+17 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.80d11 -0.351 -1.0216d6         !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+10         !! Reaction number
+2         !! Number of reactants
+10 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.20d10 -0.23d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+11         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+1 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+4.0d10 0.0d0 1.5290d7           !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+12         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+6.60d11 -0.5d0 0.0d0          !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+13         !! Reaction number
+2         !! Number of reactants
+2 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+4 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+14 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.60d8 0.4872d0 1.2163d8              !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+14         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+11 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+4.00d3 2.0d0 4.1928d6              !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+15         !! Reaction number
+2         !! Number of reactants
+8 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 2.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+7.00d10 0.0d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+16         !! Reaction number
+2         !! Number of reactants
+10 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.80d17 -2.654d0 5.267d6        !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+17         !! Reaction number
+2         !! Number of reactants
+10 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+15 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.10d10 -0.48d0 4.9404d6               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+18         !! Reaction number
+1         !! Number of reactants
+16 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.20d13 0.0d0 3.9126d8             !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+1         !! Third bodies?
+
+19         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+16 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+1 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+6.40d2 2.39d0 4.2629d7            !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+20         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+16 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9.40d3 1.94d0 2.7068d7         !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+21         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+16 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+13 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.04d6 2.04d0 2.3716d6         !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+22         !! Reaction number
+2         !! Number of reactants
+2 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+15 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+7 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.0d11 0.0d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+23         !! Reaction number
+1         !! Number of reactants
+15 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+6.50d4 0.0d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+1         !! Include Lindemann form(n) or not (0)
+1         !! Third bodies?
+
+24         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+15 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+1 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.0d11 0.0d0 0.0d0           !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+25         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+15 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+6 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+17 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.0d11 0.0d0 0.0d0          !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+26         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+15 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+5.0d10 0.0d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+27         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+1         !! Number of products
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.5d12 -0.4d0 0.0d0         !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+2         !! Include Lindemann form(n) or not (0)
+2         !! Third bodies?
+
+28        !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+1 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+4.4d8 0.72d0 2.7218d6          !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+29         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+3 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.60d10 0.0d0 0.0d0               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+30         !! Reaction number
+1         !! Number of reactants
+17 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+4 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+8.00d8 0.0d0 2.6218d8              !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+3         !! Include Lindemann form(n) or not (0)
+1         !! Third bodies?
+
+31         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+17 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.31d7 0.0d0 2.1311d7        !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+32         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+17 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+1         !! Number of products
+10 2.0d0   !! Identity of products, and molar stoichiometric coefficients
+9.15d10 0.0d0 1.1595d8           !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+33         !! Reaction number
+2         !! Number of reactants
+5 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+17 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+7 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.0d10 0.0d0 1.6747d8          !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+34         !! Reaction number
+1         !! Number of reactants
+19 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+4 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.1d13 0.0d0 2.7619d8               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+3         !! Third bodies?
+
+35         !! Reaction number
+2         !! Number of reactants
+7 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+19 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.1d9 0.0d0 -2.0113d6               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+36         !! Reaction number
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+19 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.5d11 0.0d0 6.2842e6        !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+37         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+19 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+2 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+10 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.0d10 0.0d0 2.5117d6               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+38         !! Reaction number
+2         !! Number of reactants
+4 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+14 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.0d4 2.0d0 8.3736d6           !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+39         !! Reaction number
+2         !! Number of reactants
+2 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+14 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+7 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+3.0d9 0.0d0 1.0467d8               !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+40         !! Reaction number
+2         !! Number of reactants
+7 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+14 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+12 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+18 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+2.9d1 2.69 -6.6989d6              !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+41         !! Reaction number (31 is bi-Arrhenius - this is the high-temp pathway)
+2         !! Number of reactants
+6 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+17 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+2         !! Number of products
+5 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+9 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+7.83d11 0.0d0 8.1182d7        !! The three coefficients which give the rate constant
+1         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindemann form(n) or not (0)
+0         !! Third bodies?
+
+!! Third-body efficiencies #18, #23, #30
+1 1.0d0
+2 1.0d0
+3 1.0d0
+4 1.0d0
+5 1.0d0
+6 1.0d0
+7 1.0d0
+8 1.0d0
+9 1.0d0
+10 1.0d0
+11 1.0d0
+12 1.0d0
+13 1.0d0
+14 1.0d0
+15 1.0d0
+16 1.0d0
+17 1.0d0
+18 1.0d0
+19 1.0d0
+!! Third-body efficiencies #27
+1 2.0d0
+2 1.5d0
+3 1.0d1
+4 1.0d0
+5 1.0d0
+6 1.0d0
+7 1.0d0
+8 1.0d0
+9 1.0d0
+10 1.0d0
+11 1.0d0
+12 1.0d0
+13 1.0d0
+14 1.0d0
+15 1.0d0
+16 1.0d0
+17 1.0d0
+18 1.0d0
+19 1.0d0
+!! Third-body efficiencies #34
+1 1.0d0
+2 1.0d0
+3 1.625d1
+4 1.0d0
+5 1.0d0
+6 1.0d0
+7 1.0d0
+8 1.0d0
+9 1.0d0
+10 1.0d0
+11 1.0d0
+12 1.0d0
+13 1.0d0
+14 1.0d0
+15 1.0d0
+16 1.0d0
+17 1.0d0
+18 1.0d0
+19 1.0d0
+
+!! Lindemann step coefficients (3 for k0 and constant F)
+1  5.0d10 0.0d0 0.0d0 1.0d0
+2  2.3d11 0.206 -6.5104d6 1.0d0
+3  2.0d11 0.0d0 2.3716d8 1.0d0
+
+
+
+

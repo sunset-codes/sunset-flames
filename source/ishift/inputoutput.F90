@@ -39,7 +39,7 @@ contains
 
      !! STEP 1: Load IPART (some params, plus list of nodes + boundary normals)
      open(13,file='../gen/IPART')
-     read(13,*) nb,npfb,dummy      !! dummy is largest s(i) in domain...
+     read(13,*) nb,npfb,dummy,smin      !! dummy is largest s(i) in domain...
      read(13,*) xmin,xmax,ymin,ymax
      read(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
      !! For the purposes of shifting, ybcond=3 (no-slip) is the same as ybcond=2 (symmetry)
@@ -122,7 +122,7 @@ contains
      
      !! Write new file to ../gen/IPART
      open(unit=13,file='../gen/IPART')
-     write(13,*) nb,npfb-nrw*nbw-nrio*nbio,smax  !! NEWBC
+     write(13,*) nb,npfb-nrw*nbw-nrio*nbio,smax,smin  !! NEWBC
      write(13,*) xmin,xmax,ymin,ymax
      write(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
      do i=1,npfb
@@ -235,14 +235,14 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      !! Reads in boundary patches
      use boundaries
      integer(ikind) i,j,ii,jj,npfb_tmp,k
-     real(rkind) :: ns,dummy,prox,rad,radmin,dx,dy,smag
+     real(rkind) :: ns,dummy,prox,rad,radmin,dx,dy,smag,dxmin
      real(rkind),dimension(dims) :: rij
      real(rkind),dimension(:,:),allocatable :: tmp_vec
      integer(ikind) :: shiftflag
 
      !! STEP 1: Load IPART (some params, plus list of nodes + boundary normals)
      open(13,file='../gen/IPART')
-     read(13,*) nb,npfb,dummy      !! dummy is largest s(i) in domain...
+     read(13,*) nb,npfb,dummy,smin      !! dummy is largest s(i) in domain...
      read(13,*) xmin,xmax,ymin,ymax
      read(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
      !! For the purposes of shifting, ybcond=3 (no-slip) is the same as ybcond=2 (symmetry)
@@ -311,7 +311,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      
      n= npfb - nrw*nbw - nrio*nbio !!NEWBC
      open(212,file='../../IPART')
-     write(212,*) nb,n*nprocsZ,smax
+     write(212,*) nb,n*nprocsZ,smax,smin
      write(212,*) xmin,xmax,ymin,ymax
      write(212,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
      write(212,*) nprocsX,nprocsY,nprocsZ

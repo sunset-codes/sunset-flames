@@ -24,7 +24,11 @@ module transport
   use common_vars
   use omp_lib
   implicit none
+  
+  private
+  public :: evaluate_transport_properties
 
+  real(rkind) :: segment_tstart,segment_tend
 
 contains
 !! ------------------------------------------------------------------------------------------------
@@ -32,7 +36,7 @@ contains
      use mirror_boundaries
      !! Uses temperature, cp and density to evaluate thermal conductivity, viscosity and 
      !! molecular diffusivity. For isothermal flows, use reference values.
-     integer(ikind) :: ispec,i
+     integer(ikind) :: ispec,i,j
      real(rkind) :: tmp
      segment_tstart=omp_get_wtime()             
        
@@ -61,28 +65,46 @@ contains
         !! between transport gradients and temperature gradients, so we evaluate the transport
         !! properties at halos and copy to mirrors.
 
-        !$omp parallel do 
-        do i=1,npfb     
+!        !$omp parallel do 
+        do i=1,npfb    
            call evaluate_mixture_average_transport_at_node(i)    
         end do
-        !$omp end parallel do     
+!        !$omp end parallel do     
+       
         
         !! Copy to mirrors
-        call mirror_bcs_transport_only
+!        call mirror_bcs_transport_only
+#ifdef mp
+     do j=npfb+1,np_nohalo
+#else
+     do j=npfb+1,np
+#endif
+        i = irelation(j)
+        visc(j) = visc(i)
+        lambda_th(j) = lambda_th(i)
+        do ispec=1,nspec
+           roMdiff(j,ispec) = roMdiff(i,ispec)
+           tdr(j,ispec) = tdr(i,ispec)
+        end do        
+     end do
+
+        
 #ifdef mp
         !! Calculate in halos (faster than MPI comms)
-        !$omp parallel do 
+!        !$omp parallel do 
         do i=np_nohalo+1,np     
            call evaluate_mixture_average_transport_at_node(i)    
         end do
-        !$omp end parallel do     
+!        !$omp end parallel do     
 #endif   
      
      end if
 #else
      !! Isothermal options
      visc(:) = visc_ref
-     roMdiff(:,:) = visc_ref/Pr/one !! reference diffusivity with Le=one
+     do i=1,np
+        roMdiff(i,:) = visc_ref*one_over_Lewis_number(:) 
+     end do
 #endif     
 
      !! Profiling
@@ -109,16 +131,25 @@ contains
      integer(ikind) :: ispec,jspec 
      real(rkind) :: logT,roo_molar_mass_mix,logp,tmpro
      real(rkind),dimension(nspec_max) :: species_visc,Xspec,species_lambda
-     real(rkind),dimension(nspec_max,nspec_max) :: oospecies_diff
+     real(rkind),dimension(nspec_max,nspec_max) :: oospecies_diff,species_tdr
      real(rkind) :: store1,store2,store3
-     real(rkind) :: logT2,logT3   
-                        
+     real(rkind) :: logT2,logT3,Ti,T2,T3
+     
      !! Logarithm of temperature ratio
      logT = log(T(inode)/T_ref_mxav)
-
+     
+     !! Normalise Ti by reference
+     Ti = T(inode)/T_ref_mxav         
+     
      !! Powers of logT
      logT2=logT*logT
      logT3=logT2*logT
+     
+#ifdef sorduf     
+     !! Powers of T
+     T2 = Ti*Ti
+     T3 = Ti*T2
+#endif     
      
      !! Store the local density
      tmpro = ro(inode)
@@ -152,7 +183,19 @@ contains
            oospecies_diff(jspec,ispec) = oospecies_diff(ispec,jspec) !! Copy to upper triangle        
         end do
         
+#ifdef sorduf        
+        !! Evaluate thermal diffusion ratio for lower triangle, then copy accross
+        do jspec=1,ispec-1
+           species_tdr(ispec,jspec) = mxav_coef_tdr(ispec,jspec,1) + mxav_coef_tdr(ispec,jspec,2)*Ti &
+                                    + mxav_coef_tdr(ispec,jspec,3)*T2 + mxav_coef_tdr(ispec,jspec,4)*T3
+                                      
+           species_tdr(jspec,ispec) = species_tdr(ispec,jspec)
+        end do
+        species_tdr(ispec,ispec) = zero
+#endif        
+        
      end do
+          
    
      !! Finalise Xspec  
      Xspec(1:nspec) = Xspec(1:nspec)/roo_molar_mass_mix
@@ -188,6 +231,19 @@ contains
         end do
         roMdiff(inode,ispec) = (tmpro-Yspec(inode,ispec))/store2
      end do
+
+#ifdef sorduf     
+     !! ---------------------------------------------------------------------------------
+     !! Combination rule for thermal diffusion ratio ====================================
+     do ispec = 1,nspec
+        tdr(inode,ispec) = zero
+        do jspec = 1,nspec
+           tdr(inode,ispec) = tdr(inode,ispec) + species_tdr(ispec,jspec)*Xspec(jspec)
+        end do     
+     end do
+#endif     
+
+
 
      return
   end subroutine evaluate_mixture_average_transport_at_node

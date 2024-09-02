@@ -41,8 +41,8 @@ module rhs
   real(rkind),dimension(:),allocatable :: store_diff_E
     
   real(rkind) :: dundn,dutdn,dutdt,dpdn
-  real(rkind) :: xn,yn,un,ut
-  
+  real(rkind) :: xn,yn,un,ut,segment_tstart,segment_tend
+    
   !! Characteristic boundary condition formulation
   real(rkind),dimension(:,:),allocatable :: L  !! The "L" in NSCBC formulation    
   
@@ -55,6 +55,8 @@ contains
      !! Control routine for calculating right hand sides. Does thermodynamic evaluations, finds
      !! gradients, and then calls property-specific RHS routines
           
+     segment_tstart = omp_get_wtime()     
+            
      !! Some initial allocation of space for boundaries
      if(nb.ne.0) allocate(L(nb,5+nspec)) 
 
@@ -102,7 +104,8 @@ contains
         gradp(i,:) = csq*gradro(i,:)  !! N.B. not precisely correct for isothermal multispec
      end do
      !$omp end parallel do
-#endif                 
+#endif                   
+
 
      !! Call individual routines to build the RHSs
      !! N.B. second derivatives and derivatives of secondary variables are calculated within
@@ -113,7 +116,12 @@ contains
      call calc_rhs_roE
 
      !! Calculate chemical production rates and add these to rhs of species equation
+     !! Profiling (put here because CHEMISTRY is taken as same level module as RHS, so
+     !! don't want to include it in RHS time.
+     segment_tend = omp_get_wtime()
+     segment_time_local(3) = segment_time_local(3) + segment_tend - segment_tstart 
      call calculate_chemical_production_rate
+     segment_tstart = omp_get_wtime()
 
      !! Evaluate RHS for boundaries
      if(nb.ne.0) then 
@@ -133,6 +141,11 @@ contains
      deallocate(gradroE)
      deallocate(gradT,lapT)
 #endif     
+  
+     
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(3) = segment_time_local(3) + segment_tend - segment_tstart   
   
      return
   end subroutine calc_all_rhs
@@ -190,9 +203,9 @@ contains
      real(rkind) :: q00,q01,q02,q03,q04
      real(rkind),dimension(:,:),allocatable :: speciessum_roVY,speciessum_hgradY
      real(rkind),dimension(:),allocatable :: speciessum_divroVY,speciessum_hY
-     real(rkind),dimension(:,:),allocatable :: gradroMdiff
+     real(rkind),dimension(:,:),allocatable :: gradroMdiff,gradtdr
      real(rkind),dimension(:,:),allocatable :: mxav_store1,mxav_store2
-     real(rkind),dimension(:),allocatable :: mxav_store3,mxav_store4     
+     real(rkind),dimension(:),allocatable :: mxav_store3,mxav_store4,mxav_store5     
      real(rkind),dimension(:,:),allocatable :: roVY
 
      !! Allocate space for gradients and stores
@@ -211,10 +224,13 @@ contains
      allocate(speciessum_hY(npfb));speciessum_hY = zero
      allocate(speciessum_hgradY(npfb,dims));speciessum_hgradY = zero
      allocate(gradroMdiff(npfb,dims))
+#ifdef sorduf
+     allocate(gradtdr(npfb,dims))
+#endif
      
      !! For mixture averaged transport, pre-calculate additional diffusion driving forces
      allocate(mxav_store1(npfb,dims),mxav_store2(npfb,dims))
-     allocate(mxav_store3(npfb),mxav_store4(npfb))
+     allocate(mxav_store3(npfb),mxav_store4(npfb),mxav_store5(npfb))
      if(flag_mix_av.eq.1) then
      
         !! Pre-populate stores 3 and 4 with density and pressure laplacians
@@ -235,8 +251,11 @@ contains
            !! grad(p)/(ro*R0*T)
            mxav_store2(i,:) = tmpro*tmpT*gradp(i,:)/Rgas_universal
            
+           !! lap(T)/T - grad(lnT)**2
+           mxav_store5(i) = lapT(i)*tmpT - tmpT*tmpT*dot_product(gradT(i,:),gradT(i,:))
+           
            !! lap(T)/T - grad(lnT)**2 + lap(ro)/ro - grad(lnro).grad(lnro)
-           mxav_store3(i) = lapT(i)*tmpT - tmpT*tmpT*dot_product(gradT(i,:),gradT(i,:)) &
+           mxav_store3(i) = mxav_store5(i) &
                           + mxav_store3(i)*tmpro - tmpro*tmpro*dot_product(gradro(i,:),gradro(i,:))
                           
            !!(1/roR0T)*(lap(p) - gradp.(grad(lnT)+grad(lnro)))               
@@ -248,9 +267,12 @@ contains
         
         !! On boundary nodes, we neglect any normal terms
         if(nb.ne.0) then              
-           !$omp parallel do private(i)
+           !$omp parallel do private(i,tmpro,tmpT)
            do j=1,nb
               i=boundary_list(j)
+              !! Store inverse of density and temperature
+              tmpro = one/ro(i)
+              tmpT=one/T(i)    
 
               !! grad(lnT) + grad(lnro)
               mxav_store1(i,:) = tmpT*gradT(i,:) + tmpro*gradro(i,:)
@@ -258,8 +280,11 @@ contains
               !! grad(p)/(ro*R0*T)
               mxav_store2(i,:) = tmpro*tmpT*gradp(i,:)/Rgas_universal              
                             
+              !! lap(T)/T - grad(lnT)**2
+              mxav_store5(i) = lapT(i)*tmpT - tmpT*tmpT*dot_product(gradT(i,2:3),gradT(i,2:3))              
+                            
               !! lap(T)/T - grad(lnT)**2 + lap(ro)/ro - grad(lnro).grad(lnro)
-              mxav_store3(i) = lapT(i)*tmpT - tmpT*tmpT*dot_product(gradT(i,2:3),gradT(i,2:3)) &
+              mxav_store3(i) = mxav_store5(i) &
                              + mxav_store3(i)*tmpro - tmpro*tmpro*dot_product(gradro(i,2:3),gradro(i,2:3))
                           
               !!(1/roR0T)*(lap(p) - gradp.(grad(lnT)+grad(lnro)))               
@@ -273,6 +298,7 @@ contains
         !! These terms are zero for constant Lewis number assumption
         mxav_store1=zero;mxav_store2=zero
         mxav_store3=zero;mxav_store4=zero
+        mxav_store5=zero
      end if
      
      !! Loop over all species
@@ -292,7 +318,10 @@ contains
 
         !! Diffusivity gradients
         if(flag_mix_av.eq.1) then
-           call calc_gradient(roMdiff(:,ispec),gradroMdiff)           
+           call calc_gradient(roMdiff(:,ispec),gradroMdiff)   
+#ifdef sorduf           
+           call calc_gradient(tdr(:,ispec),gradtdr)        
+#endif           
         else
 #ifndef isoT
            !$omp parallel do
@@ -307,14 +336,13 @@ contains
         
         !! Zero diffusive flux
         roVY = zero
-
-segment_tstart=omp_get_wtime()    
       
         !$omp parallel do private(i,tmp_scal,tmpY,divroVY,enthalpy, &
-        !$omp dcpdT,cpispec,tmpro,gradroDY,roDY)
+        !$omp dcpdT,cpispec,tmpro,gradroDY,roDY,tmpT)
         do j=1,npfb-nb
            i=internal_list(j)
            tmpro = one/ro(i) !! tmpro contains 1/ro
+           tmpT = one/T(i)  !! tmpT contains 1/T
 
            !! Convective term: ro*u.gradY + Y(div.(ro*u))        
            tmp_scal = ro(i)*(u(i)*gradYspec(i,1,ispec) + &
@@ -326,7 +354,7 @@ segment_tstart=omp_get_wtime()
            divroVY = roMdiff(i,ispec)*lapYspec(i) &
                       + dot_product(gradYspec(i,:,ispec),gradroMdiff(i,:))
            
-           
+#ifndef isoT           
            !! roDY and gradroDY - these are used for additional mixture averaged terms
            roDY = roMdiff(i,ispec)*Y_thisspec(i)
            gradroDY = roVY(i,:) + Y_thisspec(i)*gradroMdiff(i,:)
@@ -335,13 +363,25 @@ segment_tstart=omp_get_wtime()
            roVY(i,:) = roVY(i,:) + roDY*(mxav_store1(i,:) + mxav_store2(i,:)*molar_mass(ispec))                      
            divroVY = divroVY + dot_product(gradroDY,mxav_store1(i,:)-mxav_store2(i,:)*molar_mass(ispec)) &
                              + roDY*(mxav_store3(i) + mxav_store4(i)*molar_mass(ispec))        
+
+#ifdef sorduf                      
+           !! Add Dufour terms to div.q
+!           store_diff_E(i) = store_diff_E(i) + Rgas_universal*one_over_molar_mass(ispec)*( &
+!                             tdr(i,ispec)*divroVY*T(i) &
+!                           + T(i)*dot_product(roVY(i,:),gradtdr(i,:)) &
+!                           + tdr(i,ispec)*dot_product(gradT(i,:),roVY(i,:)) )                     
                       
-           
+           !! Add Soret terms
+           roVY(i,:) = roVY(i,:) + roDY*tdr(i,ispec)*tmpT*gradT(i,:)
+           divroVY = divroVY + roDY*tdr(i,ispec)*mxav_store5(i) &
+                             + roDY*tmpT*dot_product(gradtdr(i,:),gradT(i,:)) &
+                             + tdr(i,ispec)*tmpT*dot_product(gradT(i,:),gradroDY)
+#endif                             
+
            !! Sum roVY and div(roVY) over species
            speciessum_divroVY(i) = speciessum_divroVY(i) + divroVY
            speciessum_roVY(i,:) = speciessum_roVY(i,:) + roVY(i,:)
 
-#ifndef isoT                                 
            !! Evaluate enthalpy, cp and dcp/dT for species ispec
            call evaluate_enthalpy_at_node(T(i),ispec,enthalpy,cpispec,dcpdT)
 
@@ -367,20 +407,17 @@ segment_tstart=omp_get_wtime()
         end do
         !$omp end parallel do
 
-!! Profiling
-segment_tend = omp_get_wtime()
-segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
-
         !! Make L5+ispec and boundary RHS
         if(nb.ne.0)then
            allocate(grad2Yspec(nb,dims));grad2Yspec=zero
            call calc_grad2bound(Y_thisspec,grad2Yspec)      
    
-           !$omp parallel do private(i,xn,yn,un,ut,dutdt,tmpY &
+           !$omp parallel do private(i,xn,yn,un,ut,dutdt,tmpY,tmpT &
            !$omp ,divroVY,enthalpy,tmpro,cpispec,dcpdT,tmp_scal,roDY,gradroDY,q00,q01,q02,q03,q04)
            do j=1,nb
               i=boundary_list(j)
               tmpro = one/ro(i)  !! tmpro contains 1/ro
+              tmpT = one/T(i)  !! tmpT contains 1/T              
               
               !! Convective term: ro*u.gradY + Y(div.(ro*u)) with zero boundary normal term
               tmp_scal = ro(i)*(zero*gradYspec(i,1,ispec) + &
@@ -395,12 +432,12 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
               !! divroVY for constant Lewis approximation
               divroVY = roMdiff(i,ispec)*lapYspec(i) &
                       + dot_product(gradYspec(i,2:3,ispec),gradroMdiff(i,2:3))  
-                                            
+
+#ifndef isoT                                            
               !! roDY and grad(roDY) used in mixture averaged formulation
               roDY = roMdiff(i,ispec)*Y_thisspec(i)
               gradroDY = roVY(i,:) + Y_thisspec(i)*gradroMdiff(i,:)
-              
-              
+                            
               !! Augment to include mixture averaged driving forces
               roVY(i,:) = roVY(i,:) + roDY*(mxav_store1(i,:) + mxav_store2(i,:)*molar_mass(ispec))
               
@@ -409,7 +446,21 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
 
               !! Add roDY*(grad(grad(lnT)+grad(lnro)-WgradP/roRT)) (NB. s3 and s4 contain transverse terms only)
               divroVY = divroVY + roDY*(mxav_store3(i) + mxav_store4(i)*molar_mass(ispec))
+
+#ifdef sorduf
+              !! Add Dufour terms to div.q
+!              store_diff_E(i) = store_diff_E(i) + Rgas_universal*one_over_molar_mass(ispec)*( &
+!                                tdr(i,ispec)*divroVY*T(i) &
+!                              + T(i)*dot_product(roVY(i,2:3),gradtdr(i,2:3)) &
+!                              + tdr(i,ispec)*dot_product(gradT(i,2:3),roVY(i,2:3)) )                     
            
+              !! Add Soret terms
+              roVY(i,:) = roVY(i,:) + roDY*tdr(i,ispec)*tmpT*gradT(i,:)
+              divroVY = divroVY + roDY*tdr(i,ispec)*mxav_store5(i) &
+                             + roDY*tmpT*dot_product(gradtdr(i,2:3),gradT(i,2:3)) &
+                             + tdr(i,ispec)*tmpT*dot_product(gradT(i,2:3),gradroDY(2:3))           
+#endif                             
+#endif           
               !! Up to this point, divroVY only contains transverse terms
                    
               !! zero normal components of flux if required
@@ -442,14 +493,13 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
                  end if
               end if
                                          
-              
+#ifndef isoT              
               !! Sum roVY and div(roVY) over species
               speciessum_divroVY(i) = speciessum_divroVY(i) + divroVY
 
               !! sum of species of roVY  
               speciessum_roVY(i,:) = speciessum_roVY(i,:) + roVY(i,:)      
 
-#ifndef isoT
               !! Evaluate enthalpy, cp and dcp/dT for species ispec
               call evaluate_enthalpy_at_node(T(i),ispec,enthalpy,cpispec,dcpdT)
 
@@ -483,14 +533,16 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
         end if                         
 
      end do
-    
-     segment_tstart = omp_get_wtime()
-    
+        
      !! Deallocate any stores no longer required    
      deallocate(lapYspec,Y_thisspec)
-     deallocate(gradroMdiff)     
+     deallocate(gradroMdiff)
+#ifdef sorduf
+     deallocate(gradtdr)
+#endif          
      deallocate(roVY)
-     deallocate(mxav_store1,mxav_store2,mxav_store3,mxav_store4)
+     deallocate(mxav_store1,mxav_store2,mxav_store3,mxav_store4,mxav_store5)
+
 
      !! Run through species again and finalise rhs
      do ispec=1,nspec
@@ -507,6 +559,7 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
 
         end do
         !$omp end parallel do
+        
      end do
      
      !! Run over all nodes one final time to add terms to energy equation
@@ -532,10 +585,6 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
 
      deallocate(speciessum_divroVY,speciessum_roVY,gradYspec)
      deallocate(speciessum_hY,speciessum_hgradY)
-
-!! Profiling
-segment_tend = omp_get_wtime()
-segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
           
      return
   end subroutine calc_rhs_Yspec    
@@ -902,7 +951,7 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
 #endif
 
      !! Deallocation of spatial derivatives
-     deallocate(store_diff_E)
+     deallocate(store_diff_E)         
            
      return
   end subroutine calc_rhs_roE
@@ -912,9 +961,7 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
     !! rhs for each equation. It should only be called if nb.ne.0
     integer(ikind) :: i,j,ispec
     real(rkind) :: tmpro,c,tmp_scal,cv,gammagasm1,enthalpy
-           
-    segment_tstart = omp_get_wtime()           
-           
+                      
     !! Loop over boundary nodes and specify L as required
     !$omp parallel do private(i)
     do j=1,nb
@@ -993,10 +1040,7 @@ segment_time_local(7) = segment_time_local(7) + segment_tend - segment_tstart
     !$omp end parallel do
     !! De-allocate L
     deallocate(L)
-        
-    !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart    
+         
 
     return  
   end subroutine calc_rhs_nscbc

@@ -15,6 +15,13 @@ module mirror_boundaries
   use common_vars
 
   implicit none
+
+  private
+  public :: create_mirror_particles,reapply_mirror_bcs,reapply_mirror_bcs_divvel_only, &
+            mirror_bcs_vel_only
+  
+  
+  real(rkind) :: segment_tstart,segment_tend
   
   !! node_type describes what sort of boundary condition to apply
   !! 0 = wall
@@ -29,7 +36,7 @@ module mirror_boundaries
   !! TO BE COMPLETED: ybcond=3 and xbcond=1 or 2 for CORNERS. At present, ybcond=3 (no-slip)
   !! only works with xbcond=0.
 
-  public :: create_mirror_particles,reapply_mirror_bcs,reapply_mirror_bcs_divvel_only
+
 contains
 !! ------------------------------------------------------------------------------------------------  
   subroutine create_mirror_particles
@@ -309,7 +316,7 @@ contains
 
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart
+     segment_time_local(10) = segment_time_local(10) + segment_tend - segment_tstart
      return
   end subroutine reapply_mirror_bcs
 !! ------------------------------------------------------------------------------------------------ 
@@ -334,39 +341,9 @@ contains
 
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart
+     segment_time_local(10) = segment_time_local(10) + segment_tend - segment_tstart
      return
   end subroutine reapply_mirror_bcs_divvel_only
-!! ------------------------------------------------------------------------------------------------ 
-  subroutine mirror_bcs_transport_only
-     !! Just copy transport properties to mirrors
-     use omp_lib
-     integer(ikind) :: i,j,ispec
-     
-     segment_tstart = omp_get_wtime()
-     
-     !! Update properties in the boundary particles
-     !$OMP PARALLEL DO PRIVATE(i)
-#ifdef mp
-     do j=npfb+1,np_nohalo
-#else
-     do j=npfb+1,np
-#endif
-        i = irelation(j)
-        visc(j) = visc(i)
-        lambda_th(j) = lambda_th(i)
-        do ispec=1,nspec
-           roMdiff(j,ispec) = roMdiff(i,ispec)
-        end do
-        
-     end do
-     !$OMP END PARALLEL DO     
-
-     !! Profiling
-     segment_tend = omp_get_wtime()
-     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart
-     return
-  end subroutine mirror_bcs_transport_only 
 !! ------------------------------------------------------------------------------------------------   
   subroutine mirror_bcs_vel_only
      use omp_lib
@@ -404,7 +381,7 @@ contains
 
      !! Profiling
      segment_tend = omp_get_wtime()
-     segment_time_local(2) = segment_time_local(2) + segment_tend - segment_tstart
+     segment_time_local(10) = segment_time_local(10) + segment_tend - segment_tstart
      return
   end subroutine mirror_bcs_vel_only
 !! ------------------------------------------------------------------------------------------------ 

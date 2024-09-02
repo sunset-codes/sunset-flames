@@ -39,8 +39,6 @@ program datgen
   integer(ikind) :: npdps_new,inew,block_left,block_right,block_new,block_delete,block_end
   double precision, parameter :: r3o2 = 0.5d0*sqrt(3.0d0)
   integer(ikind) :: nbx,nby,nbtot
-
-  
   
 
   write(*,*) 'Cases: '
@@ -49,9 +47,10 @@ program datgen
   write(*,*) '  case 3:  unit torus'
   write(*,*) '  case 4:  Rayleigh-Taylor'
   write(*,*) '  case 5:  Simple flame tube'  
-  write(*,*) '  case 6:  Hong Im style bluff body'    
+  write(*,*) '  case 6:  Bluff body stabilised flame (from King (2024) CAME)'    
   write(*,*) '  case 7:  Half-plane with bump'
-  write(*,*) '  case 8:  Cylinder'      
+  write(*,*) '  case 8:  Cylinder'  
+  write(*,*) '  case 9:  Cylinder array'    
   write(*,*) '  '
   write(*,*) 'Input test case number: '
   read(*,*) itest
@@ -85,7 +84,7 @@ program datgen
 
      yl=2.0d0*pi
      xl=yl
-     dx0=yl/530.0d0
+     dx0=yl/100.0d0
      xbcond_L=1;xbcond_U=1;ybcond_L=1;ybcond_U=1
      
      nb_patches = 4
@@ -155,16 +154,16 @@ case(5) !! Inflow/outflow tube for simple flames
 !        blob_coeffs(i,:)=h0*(/1.0d0,0.4d0,0.0d0,0.0d0,0.0d0,0.0d0/);blob_rotation(i)=-pi/9.0d0
 !     end do
 
-     dxmin = dx0/2.0d0
+     dxmin = dx0/1.0d0
      dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=dx0*1.0d0;dx_wallio=dx_in  !! dx for solids and in/outs..
 
      
 !! ------------------------------------------------------------------------------------------------
-case(6) !! Hong Im flameholder setup
+case(6) !! Bluff body stabilised flame (from CMAME 2024 paper)
 
      xl=1.0d0 ! channel length
      h0=xl/40.0d0   !cylinder radius
-     yl=xl/2.0d0!/10.0d0!(4.0d0/3.0d0)  ! channel width
+     yl=xl/10.0d0!/10.0d0!(4.0d0/3.0d0)  ! channel width
      dx0=xl/(40.0d0*25.0d0)!25.0       !15
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
@@ -194,7 +193,7 @@ case(6) !! Hong Im flameholder setup
 !     blob_centre(3,:)=(/ -0.275d0*xl, 0.5d0*yl/);     
 
 
-     dxmin = dx0/2.0d0
+     dxmin = dx0/1.0d0
      dx_wall=dxmin;dx_in=4.0d0*dx0;dx_out=1.5d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!! 
 !! ------------------------------------------------------------------------------------------------
 case(7) !! Half-plane with bump
@@ -289,15 +288,15 @@ case(8) !! Arrays of cylinders for lean H2 flame dynamics tests
 !! ------------------------------------------------------------------------------------------------
 case(9) !! Porous cylinder array
 
-     nbx = 4  !! Number of cylinders along x
-     nby = 1   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
+     nbx = 10  !! Number of cylinders along x
+     nby = 6   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
      nbtot = nbx*nby + nbx/2
 
      D_cyl = 1.0d0;h0 = 0.5d0*D_cyl  !! Cylinder diameter (unity)
      S_cyl = (5.0d0/3.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
      yl = dble(max(nby,1))*S_cyl                      !! Channel width 
-     xl = 10.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
-     dx0 = D_cyl/75.0d0                  !! Baseline resolution
+     xl = 20.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
+     dx0 = D_cyl/66.66667d0                  !! Baseline resolution
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
 !     yl=yl/2.0
@@ -306,10 +305,10 @@ case(9) !! Porous cylinder array
      allocate(b_node(nb_patches,2),b_edge(nb_patches,2))
      allocate(b_type(nb_patches))
      b_type(:) = (/ 3, 2, 3, 1/)  
-     b_node(1,:) = (/ -5.0d0*D_cyl, -0.5d0*yl /)   !-12
-     b_node(2,:) = (/ -5.0d0*D_cyl+xl, -0.5d0*yl /)
-     b_node(3,:) = (/ -5.0d0*D_cyl+xl, 0.5d0*yl /)
-     b_node(4,:) = (/ -5.0d0*D_cyl, 0.5d0*yl /)
+     b_node(1,:) = (/ -15.0d0*D_cyl, -0.5d0*yl /)   !-12
+     b_node(2,:) = (/ -15.0d0*D_cyl+xl, -0.5d0*yl /)
+     b_node(3,:) = (/ -15.0d0*D_cyl+xl, 0.5d0*yl /)
+     b_node(4,:) = (/ -15.0d0*D_cyl, 0.5d0*yl /)
      nb_blobs=nbtot
      if(nb_blobs.ne.0) then
         open(unit=191,file="blob_fcoefs.in")
@@ -352,7 +351,7 @@ case(9) !! Porous cylinder array
      end if
 
      dxmin = dx0/1.0d0
-     dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=4.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
+     dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=6.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
      
 !! ------------------------------------------------------------------------------------------------     
 end select
@@ -542,6 +541,7 @@ end select
                         
      npfb = ipart
      dx0 = maxval(dxp(1:npfb))
+     dxmin = minval(dxp(1:npfb))
      
      write(*,*) 'nb,npfb,nbio= ', nb,npfb,nbio
 
@@ -566,7 +566,7 @@ end select
   
   !!
   open(13,file='./IPART')
-  write(13,*) nb,npfb,dx0
+  write(13,*) nb,npfb,dx0,dxmin
   write(13,*) xb_min,xb_max,yb_min,yb_max
   write(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
   do i=1,npfb
@@ -795,25 +795,19 @@ end subroutine quicksort
         endif    
         
      else if(itest.eq.9) then   
-!        xhat = x - blob_centre(1,1)
-!        yhat = y 
-
-!           tmp2 = ((blob_centre(1,1)-x)/(blob_centre(1,1)-xb_min))**2.0d0
-!           d2b_local = d2b_local*(1.5d0*tmp2 + 1.0d0*(1.0d0-tmp2))
-!           r_mag = sqrt(xhat**2.0d0 + yhat**2.0d0)
-!           temp = exp(-(0.5d0*r_mag)**4.0d0)
-!           dxio = dx_out + (dx_in - dx_out)*(1.0d0-temp)
+           if(x.le.-1.0d0) then
+              dxio = dx_in
+           else if(x.le.0.0d0) then
+              temp = (x+1.0d0)/1.0d0
+              dxio = dx_in*(1.0d0-temp) + dx_out*temp
+           else
+              dxio = dx_out              
+           end if
               
-        !! Over-ride object tests
-        temp = 0.5d0!4.0d0!(xb_max-xb_min)*0.15!4! - 525.0d0*dx0 !! size of refined region
-        tmp2 = -0.0d0!-3.0d0!(xb_max+xb_min)*0.5 !! location of refined region
-        tmp2 = x - tmp2 !! Location relative to finest resolution centre
-        if(abs(tmp2).le.temp) then
-           d2b_local=0.0d0
-        else
-           d2b_local=min(min(abs(tmp2-temp),abs(tmp2+temp)),bdist)
-           !   dist2bound=abs(x+0.4)
-        endif    
+           d2b_local = bdist
+
+
+
               
      else if(itest.eq.7) then   
         xhat = x - blob_centre(nb_blobs,1)

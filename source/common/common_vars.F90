@@ -22,6 +22,9 @@ module common_vars
   real(rkind) :: rho_char,T_ref,visc_ref,p_ref,phi_in
   real(rkind) :: dt_out,dt_out_stats !! Time interval between outputs  
   real(rkind) :: Pr,Ma
+  integer(ikind) :: n_modes  !! For perturbations to initial flame profiles
+  real(rkind) :: ptbn_size
+  
   
 #ifdef isoT
   real(rkind) :: csq
@@ -53,7 +56,7 @@ module common_vars
   
   !! Transport and thermodynamic properties
   real(rkind), dimension(:), allocatable :: Rgas_mix,cp,visc,lambda_th
-  real(rkind), dimension(:,:), allocatable :: roMdiff  
+  real(rkind), dimension(:,:), allocatable :: roMdiff,tdr  
   real(rkind), dimension(:), allocatable :: molar_mass,one_over_Lewis_number,one_over_molar_mass
   real(rkind), dimension(:,:),allocatable :: coef_cp,coef_h,coef_dcpdT,coef_gibbs !! indexing: ispec,j-exponent
   integer(ikind) :: polyorder_cp,ncoefs_cp  !! polynomial order,number of coefs
@@ -64,6 +67,7 @@ module common_vars
   real(rkind) :: p_ref_mxav,t_ref_mxav
   real(rkind),dimension(:,:),allocatable :: mxav_coef_visc,mxav_coef_lambda
   real(rkind),dimension(:,:,:),allocatable :: mxav_coef_Diff  
+  real(rkind),dimension(:,:,:),allocatable :: mxav_coef_tdr
 
   !! Velocity gradients  
   real(rkind),dimension(:,:),allocatable :: gradu,gradv,gradw
@@ -85,7 +89,7 @@ module common_vars
     
   !! Discretisation properties
   real(rkind), dimension(:,:), allocatable, target :: rp,rnorm
-  real(rkind), dimension(:), allocatable, target   :: h,filter_coeff,s,vol
+  real(rkind), dimension(:), allocatable, target   :: h,filter_coeff,filter_coeff2,s,vol
   integer(ikind),dimension(:),allocatable :: node_type !! Identify whether node is boundary, fluid etc...
   integer(ikind),dimension(:),allocatable :: zlayer_index_global,ilayer_index !! Identify where in the z-stack the node is
   integer(ikind),dimension(:),allocatable :: boundary_list,internal_list !! Lists for quick looping
@@ -107,7 +111,7 @@ module common_vars
 
   !! Time-stepping
   real(rkind) :: dt,dt_cfl,dt_parabolic  !! Various time-steps
-  real(rkind) :: umax,cmax,smax                  !! maximum velocity,node-spacing,sound speed
+  real(rkind) :: umax,cmax,smax,smin                  !! maximum velocity,node-spacing,sound speed
   integer(ikind) :: itime,iRKstep
   real(rkind) :: emax_nm1,emax_n,emax_np1  !! errors for PID controller
   real(rkind) :: ero_norm,erou_norm,eroE_norm,eroY_norm
@@ -154,8 +158,7 @@ module common_vars
   !! Profiling and openMP parallelisation
   real(rkind) ts_start,ts_end,t_run,t_per_dt,t_last_X
   integer(ikind) :: n_threads  
-  real(rkind) :: segment_tstart,segment_tend
-  real(rkind),dimension(11) :: segment_time_local
+  real(rkind),dimension(16) :: segment_time_local
   real(rkind) :: cputimecheck
   
   !! MPI decomposition related variables

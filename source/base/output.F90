@@ -26,7 +26,7 @@ contains
      !! This routine writes information about the simulation to screen in a fairly easy to read
      !! format. For this to work (nicely) terminal window should be 24 lines tall.
      integer(ikind) :: scr_freq=100
-     real(rkind),dimension(11) :: stg !! segment_time_global...
+     real(rkind),dimension(16) :: stg !! segment_time_global...
      real(rkind),dimension(:),allocatable :: maxphi,minphi
      integer(ikind) :: n_threads_global
      real(rkind) :: t_per_dt_global,t_last_x_global,t_run_global
@@ -70,7 +70,7 @@ contains
         t_run = t_run/dble(nprocs)
      
         !! Profiling bits
-        call MPI_ALLREDUCE(segment_time_local,stg,11,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierror)  
+        call MPI_ALLREDUCE(segment_time_local,stg,16,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,ierror)  
 
         if(iproc.eq.0) then
 
@@ -88,20 +88,21 @@ contains
            !! Profiling
            store1 = stg(11) - sum(stg(1:10))
            write(6,*) "----------------------Profiling----------------------"
-           write(6,291) "MPI transfers    :",100.0d0*stg(1)/stg(11),'%,',stg(1)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "BCs              :",100.0d0*stg(2)/stg(11),'%,',stg(2)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Filtering        :",100.0d0*stg(3)/stg(11),'%,',stg(3)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "1st Derivatives  :",100.0d0*stg(4)/stg(11),'%,',stg(4)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "2nd Derivatives  :",100.0d0*stg(5)/stg(11),'%,',stg(5)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Chemistry        :",100.0d0*stg(6)/stg(11),'%,',stg(6)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Species RHS loop :",100.0d0*stg(7)/stg(11),'%,',stg(7)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Transport        :",100.0d0*stg(8)/stg(11),'%,',stg(8)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Thermo           :",100.0d0*stg(9)/stg(11),'%,',stg(9)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Waiting          :",100.0d0*stg(10)/stg(11),'%,',stg(10)/dble(scr_freq*nprocs),"seconds/step"
-           write(6,291) "Other            :",100.0d0*store1/stg(11),'%,',store1/dble(scr_freq*nprocs),"seconds/step"
-           write(6,'(A)') "  "
+           write(6,292) "SUNSET    (4)     :",100.0d0*stg(1)/stg(1),'%,',stg(1)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) " STEP      (3)    :",100.0d0*stg(2)/stg(1),'%,',stg(2)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "  RHS       (2)   :",100.0d0*stg(3)/stg(1),'%,',stg(3)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "  CHEMISTRY (2)   :",100.0d0*stg(4)/stg(1),'%,',stg(4)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "   1st DERIVS(1)  :",100.0d0*stg(5)/stg(1),'%,',stg(5)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "   2nd DERIVS(1)  :",100.0d0*stg(6)/stg(1),'%,',stg(6)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "  FILTER    (2)   :",100.0d0*stg(7)/stg(1),'%,',stg(7)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "   TRANSPORT (1)  :",100.0d0*stg(8)/stg(1),'%,',stg(8)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "   THERMO    (1)  :",100.0d0*stg(9)/stg(1),'%,',stg(9)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "  MIRROR BC (2)   :",100.0d0*stg(10)/stg(1),'%,',stg(10)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "  MPI       (2)   :",100.0d0*stg(11)/stg(1),'%,',stg(11)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "  WAIT      (2)   :",100.0d0*stg(12)/stg(1),'%,',stg(12)/dble(scr_freq*nprocs),"seconds/step"           
                                         
         end if
+        
  
         !! Load balancing diagnostics       
 !        call MPI_BARRIER( MPI_COMM_WORLD, ierror)                       
@@ -111,6 +112,11 @@ contains
 !        end do
 !        store1 = sum(segment_time_local(2:9))
 !        write(6,*) iproc,store1,nb,npfb,j
+
+!        j=10
+!        store1 = segment_time_local(11)-sum(segment_time_local(1:10))
+!        write(6,*) iproc,nb,npfb,np_nohalo,np,j,segment_time_local(10),store1
+!        write(740+iproc,*) itime,iproc,nb,npfb,np_nohalo,np,j,segment_time_local(:)
 
         t_last_X = zero
 #else
@@ -129,19 +135,20 @@ contains
         !! Profiling
         stg = segment_time_local
         store1 = stg(11) - sum(stg(1:10))        
-        write(6,*) "----------------------Profiling----------------------"
-        write(6,291) "MPI transfers    :",100.0d0*stg(1)/stg(11),'%,',stg(1)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "BCs              :",100.0d0*stg(2)/stg(11),'%,',stg(2)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "Filtering        :",100.0d0*stg(3)/stg(11),'%,',stg(3)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "1st Derivatives  :",100.0d0*stg(4)/stg(11),'%,',stg(4)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "2nd Derivatives  :",100.0d0*stg(5)/stg(11),'%,',stg(5)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "Chemistry        :",100.0d0*stg(6)/stg(11),'%,',stg(6)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "Species RHS loop :",100.0d0*stg(7)/stg(11),'%,',stg(7)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "Transport        :",100.0d0*stg(8)/stg(11),'%,',stg(8)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "Thermo           :",100.0d0*stg(9)/stg(11),'%,',stg(9)/dble(scr_freq*nprocs),"seconds/step"
-        write(6,291) "Waiting          :",100.0d0*stg(10)/stg(11),'%,',stg(10)/dble(scr_freq*nprocs),"seconds/step"        
-        write(6,291) "Other            :",100.0d0*store1/stg(11),'%,',store1/dble(scr_freq*nprocs),"seconds/step"     
-        write(6,'(/,A)') "  "                  
+           write(6,*) "----------------------Profiling----------------------"
+           write(6,292) "SUNSET    (4)    :",100.0d0*stg(1)/stg(1),'%,',stg(1)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "STEP      (3)    :",100.0d0*stg(2)/stg(1),'%,',stg(2)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "RHS       (2)    :",100.0d0*stg(3)/stg(1),'%,',stg(3)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "1st DERIVS(1)    :",100.0d0*stg(4)/stg(1),'%,',stg(4)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "2nd DERIVS(1)    :",100.0d0*stg(5)/stg(1),'%,',stg(5)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "FILTER    (1)    :",100.0d0*stg(6)/stg(1),'%,',stg(6)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "CHEMISTRY (2)    :",100.0d0*stg(7)/stg(1),'%,',stg(7)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "TRANSPORT (1)    :",100.0d0*stg(8)/stg(1),'%,',stg(8)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "THERMO    (1)    :",100.0d0*stg(9)/stg(1),'%,',stg(9)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "MIRROR BC (1)    :",100.0d0*stg(10)/stg(1),'%,',stg(10)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "MPI       (1)    :",100.0d0*stg(11)/stg(1),'%,',stg(11)/dble(scr_freq*nprocs),"seconds/step"
+           write(6,291) "WAIT      (1)    :",100.0d0*stg(12)/stg(1),'%,',stg(12)/dble(scr_freq*nprocs),"seconds/step"     
+        write(6,'(A)') "  "                  
 #endif          
      
      !! Zero segment time
@@ -149,7 +156,8 @@ contains
      
      end if
      
-  291 FORMAT(' ',A18,F5.2,A2,1X,ES11.5,1X,A12)       
+  291 FORMAT(' ',A19,F5.2,A2,1X,ES11.5,1X,A12)       
+  292 FORMAT(' ',A19,F5.1,A2,1X,ES11.5,1X,A12)         
      
    
      ts_start=omp_get_wtime()

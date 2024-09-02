@@ -173,8 +173,9 @@ contains
      read(12,*)
      
      !! Read in initial flame position, size and temperature
+     !! Also any perturbations
      read(12,*)
-     read(12,*) fl_pos_x,fl_pos_y,fl_thck,T_hot
+     read(12,*) fl_pos_x,fl_pos_y,fl_thck,T_hot,ptbn_size,n_modes
      read(12,*)
      
      !! Read in turbulence flags/params
@@ -466,8 +467,31 @@ contains
            mxav_coef_Diff(jspec,ispec,3) = mxav_coef_Diff(ispec,jspec,3)
            mxav_coef_Diff(jspec,ispec,4) = mxav_coef_Diff(ispec,jspec,4)                                 
         end do
-     end do                   
-  
+     end do        
+     
+#ifdef sorduf     
+     !! Polynomial coefficients for thermal diffusion ratio
+     read(13,*)
+     allocate(mxav_coef_tdr(nspec,nspec,4));mxav_coef_tdr=zero
+     do ispec=2,nspec  !! Skip first one, as c_{1,1}=0
+        do jspec = 1,ispec-1
+           read(13,*) i,j,mxav_coef_tdr(ispec,jspec,1),mxav_coef_tdr(ispec,jspec,2), &
+                          mxav_coef_tdr(ispec,jspec,3),mxav_coef_tdr(ispec,jspec,4)
+        end do
+     end do           
+     read(13,*)
+     
+     !! Copy lower triangular matrix to symmetric matrix (though not actually used)
+     do ispec=1,nspec
+        do jspec=1,ispec
+           mxav_coef_tdr(jspec,ispec,1) = mxav_coef_tdr(ispec,jspec,1)
+           mxav_coef_tdr(jspec,ispec,2) = mxav_coef_tdr(ispec,jspec,2)
+           mxav_coef_tdr(jspec,ispec,3) = mxav_coef_tdr(ispec,jspec,3)
+           mxav_coef_tdr(jspec,ispec,4) = mxav_coef_tdr(ispec,jspec,4)                                 
+        end do
+     end do  
+#endif          
+    
      return
   end subroutine load_transport_file
 !! ------------------------------------------------------------------------------------------------

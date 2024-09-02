@@ -8,7 +8,7 @@ program main
   character chartemp*40, name_orig*40
   character name_vtu*40, name_vtu2*12, name_vtu3*9
   character np_string3*3, np_string4*4, np_string5*5
-  character ispec_string1*2
+  character ispec_string1*2,ispec_string2*3
   character np_string6*6, np_string7*7, np_string8*8
   character supp*4,supp3*3,supp2*2,supp1*1
   character string1*100,string2*100,string3*100,string4*100
@@ -116,7 +116,7 @@ program main
   read(*,*) N_start
   
   !! Can only load 9 species + all thermo-chem data...
-  nspecs = min(nspecs,9) 
+  nspecs = min(nspecs,19) 
 
 
   
@@ -276,8 +276,13 @@ program main
         
      !! Y mass frac
      do iii=1,nspecs
-        write(ispec_string1,'(A1,i1.1)') 'Y',iii
+        if(iii.le.9) then
+           write(ispec_string1,'(A1,i1.1)') 'Y',iii
         string1 = '    <DataArray type='//DQ//'Float32'//DQ//' Name='//DQ//ispec_string1//DQ//' format='//DQ//'ascii'//DQ//'>'
+        else
+           write(ispec_string2,'(A1,i2)') 'Y',iii
+        string1 = '    <DataArray type='//DQ//'Float32'//DQ//' Name='//DQ//ispec_string2//DQ//' format='//DQ//'ascii'//DQ//'>'
+        end if
         write(ifo,202)string1
         do ii=1,np
            write(ifo,*)Yspec(ii,iii)

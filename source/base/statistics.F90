@@ -555,11 +555,19 @@ contains
      !! This subroutine calculates left-most position at which Y(1)<0.5Y(1,inflow)
      integer(ikind) :: i,j
      real(rkind) :: leftmost_flame,c
+     integer(ikind) :: ireact
+     
+     !! Specify which species is reactant/fuel
+     if(nspec.eq.19) then
+        ireact=16
+     else
+        ireact=1
+     end if
    
      !! Global mean temperature
      leftmost_flame=1.0d10
      do i=1,npfb
-        c = one - Yspec(i,1)/(ro(i)*Yspec_reactants(1))
+        c = one - Yspec(i,ireact)/(ro(i)*Yspec_reactants(ireact))
         if(c.ge.half.and.rp(i,1).le.leftmost_flame)then
            leftmost_flame = rp(i,1)
         endif                     

@@ -16,7 +16,7 @@ module rbfs
   public :: fac,wab
 
 !!! CHOICE OF "SPH" KERNELS... 
-!!! 1 - Constant
+!!! 0 - Constant
 !!! 1 - Wendland C2
 !!! 2 - 
 !!! 3 - 

@@ -33,7 +33,7 @@ module labf
 
 contains
   subroutine calc_labf_weights
-     integer(ikind) :: i,j,k,ii
+     integer(ikind) :: i,j,k,ii,k_order
      real(rkind) :: rad,qq,x,y,xx,yy,xs,ys
      real(rkind),dimension(dims) :: rij
 
@@ -54,6 +54,7 @@ contains
 #elif order==10
      k=10
 #endif
+     k_order = k
      nsizeG=(k*k+3*k)/2   !!  5,9,14,20,27,35,44... for k=2,3,4,5,6,7,8...
      nsize_large = nsizeG
      
@@ -182,11 +183,12 @@ contains
         i1=0;i2=0;nsize=nsizeG 
 #elif order<=9
         bvechyp(:)=zero;bvechyp(36)=-one;bvechyp(38)=-4.0d0;bvechyp(40)=-6.0d0;bvechyp(42)=-4.0d0;bvechyp(44)=-one
+!        bvechyp(:)=zero;bvechyp(36)=-one;bvechyp(38)=-0.0d0;bvechyp(40)=-6.0d0;bvechyp(42)=-0.0d0;bvechyp(44)=-one        
         i1=0;i2=0;nsize=nsizeG    
 #elif order<=11      
         bvechyp(:)=zero;bvechyp(55)=one;bvechyp(57)=5.0d0;bvechyp(59)=10.0d0;bvechyp(61)=10.0d0
         bvechyp(63)=5.0d0;bvechyp(65)=one
-        i1=0;i2=0;nsize=nsizeG                             
+        i1=0;i2=0;nsize=nsizeG           
 #endif
 
 
@@ -247,7 +249,7 @@ contains
            ij_w_grad(1,k,i) = dot_product(bvecx,gvec)/hh
            ij_w_grad(2,k,i) = dot_product(bvecy,gvec)/hh
            ij_w_lap(k,i) = dot_product(bvecxx+bvecyy,gvec)/hh/hh
-           ij_w_hyp(k,i) = dot_product(bvechyp,gvec) 
+           ij_w_hyp(k,i) = dot_product(bvechyp,gvec)
            
         end do             
         
@@ -1206,35 +1208,59 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
   subroutine filter_coefficients
      !! Determine filter coefficients for hyperviscosity a priori, requiring
      !! 2/3 damping at wavenumbers 2/3 of Nyquist...
-     integer(ikind) :: i,j,k,ii
-     real(rkind) :: fji,lsum,x,y,tmp,lscal
+     integer(ikind) :: i,j,k,ii,kk
+     real(rkind) :: fji,lsum,x,y,tmp,lscal,lmax
      real(rkind),dimension(dims) :: rij
 
      !! Allocate the coefficients
-     allocate(filter_coeff(npfb))
+     allocate(filter_coeff(npfb),filter_coeff2(npfb))   
+     
           
      !! For internal nodes     
-     !$omp parallel do private(i,lsum,k,j,rij,fji,tmp,x,y,lscal)
+     !$omp parallel do private(i,lsum,k,j,rij,fji,tmp,x,y,lscal,lmax,kk)
      do ii=1,npfb-nb
         i=internal_list(ii)
         !! Set the particle length-scale (=~dx, but we *shouldn't* have access to dx)
         !! update, according to my new philisophy, we do have access to dx, but we call it s...
         lscal = 2.0*h(i)*sqrt(pi/dble(ij_count(i)))
       
-        !! Set the target wavenumber (2/3 of Nyquist)
-        tmp = (two/3.0d0)*pi/lscal !1.5
+      
+        if(node_type(i).eq.999) then
+!        if(.false.)then        
+          
+           !! Set the target wavenumber (2/3 of Nyquist)
+           tmp = (2.0d0/3.0d0)*pi/lscal !1.5
         
-        !! Calculate hyperviscosity operator of a signal at this wavenumber
-        lsum = zero
-        do k=1,ij_count(i)
-           j = ij_link(k,i)
-           rij = rp(j,:)-rp(i,:);x=rij(1);y=rij(2)
-           fji = one - cos(tmp*x)*cos(tmp*y) 
-           lsum = lsum + fji*ij_w_hyp(k,i)
-        end do
+           !! Calculate hyperviscosity operator of a signal at this wavenumber
+           lsum = zero
+           do k=1,ij_count(i)
+              j = ij_link(k,i)
+              rij = rp(j,:)-rp(i,:);x=rij(1);y=rij(2)
+              fji = one - cos(tmp*x)*cos(tmp*y) 
+              lsum = lsum + fji*ij_w_hyp(k,i)
+           end do          
+           
+           filter_coeff(i) = (2.0d0/3.0d0)/lsum
+        else
+           !! Set the target wavenumber (2/3 of Nyquist)
+           tmp = (two/3.0d0)*pi/lscal !1.5
         
-        !! Set the filter coefficient (2/3 will result in A=1/3 at target wavenumber)
-        filter_coeff(i) = (two/3.0d0)/lsum   !2/3
+           !! Calculate hyperviscosity operator of a signal at this wavenumber
+           lsum = zero
+           do k=1,ij_count(i)
+              j = ij_link(k,i)
+              rij = rp(j,:)-rp(i,:);x=rij(1);y=rij(2)
+              fji = one - cos(tmp*x)*cos(tmp*y) 
+              lsum = lsum + fji*ij_w_hyp(k,i)
+           end do
+           lmax = lsum
+
+           filter_coeff(i) = (two/three)/lsum
+        endif
+              
+           !! Set the filter coefficient (2/3 will result in A=1/3 at target wavenumber)
+
+                        
 
         !! Reduce the filter coefficient near boundaries        
         if(node_type(i).lt.0) then
@@ -1277,6 +1303,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
                 
      end do
      !$omp end parallel do
+         
      
      !! Pre-scale filter weights
      !$omp parallel do private(k)
@@ -1290,8 +1317,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
      !$omp end parallel do
     
      !! Deallocate coefficients
-     deallocate(filter_coeff,fd_parent)
-    
+     deallocate(fd_parent)
      return
   end subroutine filter_coefficients
 !! ------------------------------------------------------------------------------------------------  

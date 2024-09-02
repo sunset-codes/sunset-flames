@@ -55,7 +55,7 @@
 2
 
 !! Flame position (x,y), dimensional thickness, and T_hot
--0.23d0 0.0d0 4.0d-4 2.366d3
+-0.23d0 0.0d0 4.0d-4 2.366d3 0.0d0 1
 
 !! Turbulent initial velocity field (0=no, 1=yes), dimensional length scale and dimensionless intensity
 0 2.0d-4 5.0d0

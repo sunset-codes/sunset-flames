@@ -114,13 +114,17 @@ where $Le_{\alpha}$ is the Lewis number for species $\alpha$, which is assumed c
 \subsubsection{Mixtured-averaged transport}
 
 In this model the diffusive flux is given by 
-\begin{equation}\rho\hat{V}_{\alpha,k}Y_{\alpha}=-\rho{D}_{\alpha}\frac{\partial{Y}_{\alpha}}{\partial{x}_{k}}-\rho{D}_{\alpha}Y_{\alpha}\left(\frac{\partial\ln{T}}{\partial{x}_{k}}+\frac{\partial\ln\rho}{\partial{x}_{k}}-\frac{W_{\alpha}}{\rho{R}_{0}T}\frac{\partial{p}}{\partial{x}_{k}}\right),\end{equation}
+\begin{equation}\rho\hat{V}_{\alpha,k}Y_{\alpha}=-\rho{D}_{\alpha}\frac{\partial{Y}_{\alpha}}{\partial{x}_{k}}-\rho{D}_{\alpha}Y_{\alpha}\left(\frac{\partial\ln{T}}{\partial{x}_{k}}+\frac{\partial\ln\rho}{\partial{x}_{k}}-\frac{W_{\alpha}}{\rho{R}_{0}T}\frac{\partial{p}}{\partial{x}_{k}}\right)-\rho{D}_{\alpha}Y_{\alpha}\theta_{\alpha}^{\left(T\right)}\frac{\partial\ln{T}}{\partial{x}_{k}},\end{equation}
+where the final term represents Soret effects (thermophoresis). The heat flux vector is augmented to included (final term in~\eqref{eq:hfv2}) the Dufour effects
+\begin{equation}q_{k}=-\lambda\frac{\partial{T}}{\partial{x}_{k}}+\displaystyle\sum_{\alpha}\rho{V}_{\alpha,k}Y_{\alpha}h_{\alpha}-\displaystyle\sum_{\alpha}\frac{R_{0}T}{W_{\alpha}}\theta^{\left(T\right)}_{\alpha}\left\{\rho{D}_{\alpha}\frac{\partial{Y}_{\alpha}}{\partial{x}_{k}}+\rho{D}_{\alpha}Y_{\alpha}\left(\frac{\partial\ln{T}}{\partial{x}_{k}}+\frac{\partial\ln\rho}{\partial{x}_{k}}-\frac{W_{\alpha}}{\rho{R}_{0}T}\frac{\partial{p}}{\partial{x}_{k}}\right)\right\}\label{eq:hfv2},\end{equation}
 
-Here the transport properties for individual species and species pairs are evaluated using standard polynomial fits~\cite{kee_1986}
+
+Here the transport properties for individual species and species pairs are evaluated using standard polynomial fits~\cite{kee_1986}.
 \begin{subequations}\begin{align}
 \ln\mu_{\alpha}&=\displaystyle\sum_{l=1}^{L}c_{\mu,\alpha,l}\left(\ln\left(\frac{T}{T_{ref}}\right)\right)^{l-1}\\
 \ln\lambda_{\alpha}&=\displaystyle\sum_{l=1}^{L}c_{\lambda,\alpha,l}\left(\ln\left(\frac{T}{T_{ref}}\right)\right)^{l-1}\\
-\ln{D}_{\alpha\beta}&=\ln\left(\frac{p_{ref}}{p}\right)+\displaystyle\sum_{lj=1}^{L}c_{D,\alpha\beta,l}\left(\ln\left(\frac{T}{T_{ref}}\right)\right)^{l-1},
+\ln{D}_{\alpha\beta}&=\ln\left(\frac{p_{ref}}{p}\right)+\displaystyle\sum_{l=1}^{L}c_{D,\alpha\beta,l}\left(\ln\left(\frac{T}{T_{ref}}\right)\right)^{l-1}\\
+\theta^{\left(T\right)}_{\alpha\beta}&=\displaystyle\sum_{l=1}^{L}c_{\theta,\alpha\beta}T^{l-1},
 \end{align}\end{subequations}
 in which the $c_{\dots,l}$ are constants, and $L=4$. The transport properties are then obtained from combination rules following~\cite{ern_1994,ern_1995} as
 \begin{equation}\mu=\left[\displaystyle\sum_{\alpha}X_{\alpha}\mu_{\alpha}^{n_{\mu}}\right]^{\frac{1}{n_{\mu}}},\end{equation}
@@ -128,8 +132,10 @@ with $n_{\mu}=6$,
 \begin{equation}\lambda=\left[\displaystyle\sum_{\alpha}X_{\alpha}\lambda_{\alpha}^{n_{\lambda}}\right]^{\frac{1}{n_{\lambda}}},\end{equation}
 with $n_{\lambda}=1/4$, and the combination rule for molecular diffusivity follows the Hirschfelder-Curtiss approximation~\cite{hirschfelder_curtiss}
 \begin{equation}D_{\alpha}=\frac{\displaystyle\sum_{\beta\ne\alpha}X_{\beta}{W}_{\beta}}{W_{mix}\displaystyle\sum_{\beta\ne\alpha}\frac{X_{\beta}}{D_{\alpha\beta}}}.\end{equation}
+Finally the combination rule for the thermal diffusion ratio is
+\begin{equation}\theta^{\left(T\right)}_{\alpha}=\displaystyle\sum_{\alpha\ne\beta}X_{\beta}\theta^{\left(T\right)}_{\alpha\beta}.\end{equation}
 Note that the molar concentration $X_{\alpha}=Y_{\alpha}W_{mix}/W_{\alpha}$.
-Soret and Dufour effects are neglected.
+
 
 \subsection{Evaluation of reaction rates}
 

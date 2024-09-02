@@ -18,6 +18,8 @@ module derivatives
   use common_vars
   use omp_lib
   implicit none
+  
+  real(rkind) :: segment_dtstart,segment_dtend
 
 contains
 !! ------------------------------------------------------------------------------------------------
@@ -29,7 +31,7 @@ contains
     real(rkind),dimension(dims) :: gradtmp
     real(rkind) :: gradztmp   
     
-    segment_tstart = omp_get_wtime()     
+    segment_dtstart = omp_get_wtime()     
     
     !$OMP PARALLEL DO PRIVATE(j,k,gradtmp)
     do i=1,npfb
@@ -61,8 +63,8 @@ contains
 #endif    
 
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(4) = segment_time_local(4) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(5) = segment_time_local(5) + segment_dtend - segment_dtstart
 
     return
   end subroutine calc_gradient
@@ -75,7 +77,7 @@ contains
     real(rkind) :: lap_tmp
     
     
-    segment_tstart = omp_get_wtime()         
+    segment_dtstart = omp_get_wtime()         
 
     !$OMP PARALLEL DO PRIVATE(j,k,lap_tmp)
     do i=1,npfb
@@ -106,8 +108,8 @@ contains
   
 
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(5) = segment_time_local(5) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(6) = segment_time_local(6) + segment_dtend - segment_dtstart
     return
   end subroutine calc_laplacian
 !! ------------------------------------------------------------------------------------------------
@@ -119,7 +121,7 @@ contains
     real(rkind) :: lap_tmp
     
     
-    segment_tstart = omp_get_wtime()         
+    segment_dtstart = omp_get_wtime()         
 
     !$OMP PARALLEL DO PRIVATE(i,j,k,lap_tmp)
     do ii=1,npfb-nb
@@ -162,8 +164,8 @@ contains
 #endif    
 
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(5) = segment_time_local(5) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(6) = segment_time_local(6) + segment_dtend - segment_dtstart
     return
   end subroutine calc_laplacian_transverse_only_on_bound  
 !! ------------------------------------------------------------------------------------------------
@@ -181,7 +183,7 @@ contains
 !    real(rkind),dimension(2) :: fji
     real(rkind) :: divtmp,xn,yn,dudn,dvdn
     
-    segment_tstart = omp_get_wtime()         
+    segment_dtstart = omp_get_wtime()         
     
     !$OMP PARALLEL DO PRIVATE(j,k,divtmp)
     do i=1,npfb
@@ -235,8 +237,8 @@ contains
 
     
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(4) = segment_time_local(4) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(5) = segment_time_local(5) + segment_dtend - segment_dtstart
     return
   end subroutine calc_divergence
 !! ------------------------------------------------------------------------------------------------  
@@ -247,7 +249,7 @@ contains
     integer i,j,k,ii
     real(rkind),dimension(dims) :: g2_tmp
     
-    segment_tstart = omp_get_wtime()         
+    segment_dtstart = omp_get_wtime()         
 
     !! d2/dx2, d2/dy2
     !$OMP PARALLEL DO PRIVATE(i,j,k,g2_tmp)
@@ -283,8 +285,8 @@ contains
 #endif      
 
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(5) = segment_time_local(5) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(6) = segment_time_local(6) + segment_dtend - segment_dtstart
 
     return
   end subroutine calc_grad2bound
@@ -296,7 +298,7 @@ contains
     integer i,j,k,ii
     real(rkind),dimension(dims) :: g2_tmp
 
-    segment_tstart = omp_get_wtime()         
+    segment_dtstart = omp_get_wtime()         
 
     !$OMP PARALLEL DO PRIVATE(i,j,k,g2_tmp)
     do ii=1,nb
@@ -315,8 +317,8 @@ contains
     !$OMP END PARALLEL DO
 
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(5) = segment_time_local(5) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(6) = segment_time_local(6) + segment_dtend - segment_dtstart
 
     return
   end subroutine calc_grad2vecbound  
@@ -329,7 +331,7 @@ contains
     integer i,j,k,ii
     real(rkind),dimension(dims) :: g2_tmp
 
-    segment_tstart = omp_get_wtime()         
+    segment_dtstart = omp_get_wtime()         
 
     !$OMP PARALLEL DO PRIVATE(i,j,k,g2_tmp)
     do ii=1,nb
@@ -349,8 +351,8 @@ contains
     !$OMP END PARALLEL DO
 
     !! Profiling
-    segment_tend = omp_get_wtime()
-    segment_time_local(5) = segment_time_local(5) + segment_tend - segment_tstart
+    segment_dtend = omp_get_wtime()
+    segment_time_local(6) = segment_time_local(6) + segment_dtend - segment_dtstart
 
     return
   end subroutine calc_grad2crossbound 
@@ -361,6 +363,8 @@ contains
     real(rkind),dimension(:),allocatable :: filtphi
     integer i,j,k
     real(rkind) :: hyp_tmp
+
+    segment_dtstart=omp_get_wtime()
 
     !! Allocate temporary store
     allocate(filtphi(npfb))
@@ -373,7 +377,14 @@ contains
           j = ij_link(k,i) 
           hyp_tmp = hyp_tmp + phi(j)*ij_w_hyp(k,i)
        end do
-       filtphi(i) = phi(i) + (hyp_tmp - phi(i)*ij_w_hyp_sum(i))
+       
+!       if(node_type(i).eq.999) then
+!          hyp_tmp = (hyp_tmp - phi(i)*ij_w_hyp_sum(i))*filter_coeff(i)
+!          filtphi(i) = phi(i) + hyp_tmp
+!       else   
+          filtphi(i) = phi(i) + (hyp_tmp - phi(i)*ij_w_hyp_sum(i))          
+!       end if      
+
     end do
     !$OMP END PARALLEL DO
 
@@ -401,43 +412,13 @@ contains
 #endif
 
     deallocate(filtphi)
+    
+    !! Profiling
+    segment_dtend = omp_get_wtime()
+    segment_time_local(7) = segment_time_local(7) + segment_dtend - segment_dtstart     
 
     return
   end subroutine calc_filtered_var   
-!! ------------------------------------------------------------------------------------------------       
-  subroutine get_flow_lengthscale
-    !! Calculate the lengthscale of the flow features from the hyperviscosity operator
-    integer i,j,k
-    real(rkind) :: lap_tmp,g_tmp,filt_tmp
-    
-    !! Calculate filtered phi
-    !$OMP PARALLEL DO PRIVATE(j,k,lap_tmp,g_tmp,filt_tmp)
-    do i=1,npfb
-       lap_tmp = zero;g_tmp=zero;filt_tmp=zero
-       do k=1,ij_count(i)
-          j = ij_link(k,i) 
-          lap_tmp = lap_tmp + T(j)*ij_w_lap(k,i)
-          
-          g_tmp = g_tmp + T(j)*ij_w_grad(1,k,i)
-          
-          filt_tmp = filt_tmp + T(j)*ij_w_hyp(k,i)
-
-       end do
-       lap_tmp = lap_tmp - T(i)*ij_w_lap_sum(i)
-       g_tmp = g_tmp - T(i)*ij_w_grad_sum(1,i)
-       filt_tmp = T(i) + filter_coeff(i)*(filt_tmp-T(i)*ij_w_hyp_sum(i))       
-       
-       g_tmp = abs(g_tmp)
-       filt_tmp = abs(filt_tmp)
-
-       alpha_out(i) = abs(lap_tmp)*s(i)*s(i)/T_ref
-
-!       alpha_out(i) = (lap_tmp - phi(i)*ij_w_lap_sum(i))
-    end do
-    !$OMP END PARALLEL DO
-
-
-    return
-  end subroutine get_flow_lengthscale     
+!! ------------------------------------------------------------------------------------------------         
 !! ------------------------------------------------------------------------------------------------     
 end module derivatives

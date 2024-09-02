@@ -18,9 +18,7 @@ module setup_flow
   use turbulence
   implicit none
   
-  integer(ikind), parameter :: n_modes=4
-  real(rkind),dimension(n_modes) :: mode_amp,mode_phase
-  real(rkind), parameter :: ptbn_size = two*half   !! perturbation size in multiples of fl_thck
+  real(rkind),dimension(:),allocatable :: mode_amp,mode_phase
   
 contains
 !! ------------------------------------------------------------------------------------------------
@@ -49,7 +47,7 @@ contains
 #ifndef isoT
      allocate(lambda_th(np))
 #endif
-     allocate(roMdiff(np,nspec))
+     allocate(roMdiff(np,nspec),tdr(np,nspec))
      allocate(cp(np),Rgas_mix(np))
      
      !! Allocate the boundary temperatures
@@ -218,7 +216,9 @@ contains
      real(rkind) :: Yin_H2,Yin_O2,Yin_N2,Yout_H2O,Yout_O2
      real(rkind) :: o2n2_ratio,h2o2_stoichiometric,h2o2_ratio
      real(rkind) :: Yin_CH4,Yout_CO2
-     real(rkind) :: ch4o2_ratio,ch4o2_stoichiometric,co2h2o_ratio     
+     real(rkind) :: ch4o2_ratio,ch4o2_stoichiometric,co2h2o_ratio    
+     real(rkind) :: nh3o2_ratio,nh3o2_stoichiometric,n2h2o_ratio
+     real(rkind) :: Yin_NH3,Yout_N2 
   
      !! Allocate two arrays
      allocate(Yspec_reactants(nspec),Yspec_products(nspec))
@@ -306,6 +306,32 @@ contains
         Yspec_products(4) = Yout_H2O
         Yspec_products(5:15) = zero
         Yspec_products(16) = Yin_N2   
+     end if
+     
+     !! 19 species NH3 chemistry
+     if(nspec.eq.19) then
+        o2n2_ratio = one*molar_mass(2)/(3.76d0*molar_mass(9))
+        nh3o2_stoichiometric = four*molar_mass(16)/(three*molar_mass(2))
+        nh3o2_ratio = nh3o2_stoichiometric*phi_in
+        
+        Yin_O2 = one/(one + nh3o2_ratio + one/o2n2_ratio)
+        Yin_NH3 = Yin_O2*nh3o2_ratio
+        Yin_N2 = one - Yin_NH3 - Yin_O2
+        
+        n2h2o_ratio = two*molar_mass(3)/(six*molar_mass(9))
+        Yout_N2 = (one-Yin_N2)/(one + one/n2h2o_ratio)
+        Yout_H2O = Yout_N2/n2h2o_ratio
+        Yout_N2 = Yout_N2 + Yin_N2
+        
+        Yspec_reactants(:) = zero
+        Yspec_reactants(2) = Yin_O2
+        Yspec_reactants(16)= Yin_NH3
+        Yspec_reactants(9) = Yin_N2
+        
+        Yspec_products(:) = zero
+        Yspec_products(3) = Yout_H2O
+        Yspec_products(9) = Yout_N2                                     
+     
      end if
   
      return
@@ -710,9 +736,18 @@ contains
         ro(i) = p(i)/(Rmix_local*T(i))
 #else
         p(i) = ro(i)*csq
+        ro(i) = one + (U_char*U_char/16.0d0)*(cos(two*x)+cos(two*y))*(two+cos(two*z))/csq
+        p(i) = csq*ro(i)
+        if(x.le.y) then      
+           Yspec(i,1) = one;Yspec(i,2)=zero
+        else
+           Yspec(i,1) = zero;Yspec(i,2)=one        
+        end if
 #endif        
         
      !1.4028035124466285              
+
+     
      end do
      !$OMP END PARALLEL DO
      
@@ -817,12 +852,30 @@ contains
   subroutine initialise_perturbation
      !! Create the mode amplitudes and phases for a peturbed interface
      integer(ikind) :: i
+     integer(ikind) :: ssize,n_discard
+     integer(ikind),allocatable,dimension(:) :: state
+     real(rkind) :: ran1,ran2
+     
+     allocate(mode_amp(n_modes),mode_phase(n_modes))
+
+     !! Simple method of initializing seed from single scalar     
+     ssize = 34
+     n_discard = 100
+     allocate(state(ssize))
+     call random_seed(size=ssize)
+     state = 20180815  !! This is a random seed.
+     call random_seed( put=state )
+     do i=1,n_discard        !! Discard the first n_discard random numbers
+        call random_number(ran1)
+     end do
 
      mode_amp = zero
      mode_phase = zero
      do i=1,n_modes
-        mode_amp(i) = rand()*fl_thck*ptbn_size/L_char
-        mode_phase(i) = two*pi*rand()
+        call random_number(ran1)
+        call random_number(ran2)
+        mode_amp(i) = ran1*fl_thck*ptbn_size/L_char
+        mode_phase(i) = two*pi*ran2
      end do
      return
   end subroutine initialise_perturbation

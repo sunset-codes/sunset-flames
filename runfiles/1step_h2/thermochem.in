@@ -1,0 +1,59 @@
+!! Thermochemical transport and chemical kinetics control data
+
+!! Number of chemical species
+2
+
+!! Number of coefficients
+3
+
+!! Temperature limits
+3.0d2 5.0d3
+
+!! Gibbs reference pressure
+1.0d5
+
+!! Molar mass, Lewis number and polynomial fit of each species ------------------------------------
+!! Species 1 - Reactants
+2.543d1
+0.3348d0
+! polynomial coefs 
+ 3.5d+00
+ 3.1500d+03      !!3.15d3    !! (Tad - Tu)*3.5
+ 1.0d+00   !! Gibbs coefficient isn't used
+
+!! Species 2 - Products
+2.543d1
+0.3348d0
+! polynomial coefs 
+ 3.5d+00
+ 0.0000000d+03
+ 1.0d+00   !! Gibbs coefficient isn't used
+
+!! Data on reaction mechanism ---------------------------------------------------------------------
+!! Number of steps
+1
+
+!! Number of different third body efficiencies?
+0
+
+!! Chemical mechanism step list
+1         !! Reaction number
+1         !! Number of reactants
+1 1.0d0   !! Identity of reactants, and molar stoichiometric coefficients
+1         !! Number of products
+2 1.0d0   !! Identity of products, and molar stoichiometric coefficients
+1.000d+11  0.0000d+00  1.33020d+08 !! The three coefficients which give the rate constant
+0         !! Include gibbs-based backwards rate (1) or not (0)
+0         !! Include Lindeman form (1) or not (0)
+0         !! Third bodies?
+
+!! Third-body efficiencies #1
+
+!! Lindemann step coefficients (3 for k0 and constant F)
+
+
+
+
+
+
+

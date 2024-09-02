@@ -13,21 +13,26 @@
 # allout     If 3D, output the entire domain (1) or just a slice (0)                   (default: 1)
 # morder     m (order) value = 4,6,8,10                                                (default: 8)
 # tarout     Compress output files (1) or don't (0)                                    (default: 0)
+# sorduf     Include Soret and Dufour effects (1) or don't (0)                         (default: 0)
+# rrspecial  Add some special modifications to reaction rates (1) or don't (0)         (default: 0)
 # -------------------------------------------------------------------------------------------------
 #
 # EXAMPLE USAGE:
 #
 # Default make for reacting 2D flows:
 # make
-
+#
+# For larger simulations (e.g. >24 procs) best to compress output files:
+# make tarout=1
+#
 # For isothermal flows:
-# make thermo=0 dim3=X mpi=X pgrad=X
+# make thermo=0 
 #
-# For standard combustion problems, react=1 will overwrite any thermo flags:
-# make react=1 dim3=X mpi=X flout=X      <---------- standard combustion make
+# For inert flows (this just switches the reaction terms off)
+# make react=0
 #
-# For thermal flows with real gas properties:
-# make thermo=1 dim3=X mpi=X pgrad=X 
+#
+#
 #
 
 #
@@ -86,6 +91,11 @@ ifneq ($(mpi),0)
 FFLAGS += -Dmp
 endif
 
+# Reaction rate special
+ifeq ($(rrspecial),1)
+FFLAGS += -Drrspecial
+endif
+
 # Three dimensional?
 ifeq ($(dim3),1)
 FFLAGS += -Ddim3
@@ -104,6 +114,11 @@ endif
 # Output entire domain?
 ifneq ($(allout),0)
 FFLAGS += -Dallout
+endif
+
+# Soret and Dufour effects?
+ifeq ($(sorduf),1)
+FFLAGS += -Dsorduf
 endif
 
 LDFLAGS := -fopenmp -m64

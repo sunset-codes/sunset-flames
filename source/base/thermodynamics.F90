@@ -23,6 +23,12 @@ module thermodynamics
   use common_vars
   use omp_lib
   implicit none
+  
+  private
+  public :: evaluate_temperature_and_pressure,evaluate_enthalpy_at_node,evaluate_enthalpy_only_at_node &
+           ,evaluate_gibbs_at_node,evaluate_sound_speed_at_node,set_energy_on_bound,initialise_energy
+  
+  real(rkind) :: segment_tstart,segment_tend
 
 
 contains
@@ -163,7 +169,7 @@ contains
      real(rkind),intent(out) :: enthalpy,cpispec,dcpdT
      integer(ikind) :: iorder
      
-!     segment_tstart = omp_get_wtime()        
+     segment_tstart = omp_get_wtime()        
      
      !! Enthalpy and cp
      enthalpy = Temp*coef_h(ispec,polyorder_cp+1)    
@@ -187,8 +193,8 @@ contains
      end do
 
      !! Profiling
-!     segment_tend = omp_get_wtime()
-!     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart                        
+     segment_tend = omp_get_wtime()
+     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart                        
                       
      return
   end subroutine evaluate_enthalpy_at_node
@@ -201,7 +207,7 @@ contains
      real(rkind),intent(out) :: enthalpy
      integer(ikind) :: iorder
      
-!     segment_tstart = omp_get_wtime()             
+     segment_tstart = omp_get_wtime()             
      
      !! Enthalpy only
      enthalpy = Temp*coef_h(ispec,polyorder_cp+1)        
@@ -211,8 +217,8 @@ contains
      enthalpy = enthalpy + coef_h(ispec,polyorder_cp+2)
     
      !! Profiling
-!     segment_tend = omp_get_wtime()
-!     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart                
+     segment_tend = omp_get_wtime()
+     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart                
                  
      return
   end subroutine evaluate_enthalpy_only_at_node  
@@ -224,6 +230,8 @@ contains
      real(rkind),intent(in) :: Temp,logT
      real(rkind),intent(out) :: gibbs
      integer(ikind) :: iorder
+
+     segment_tstart=omp_get_wtime()
      
      !! Polynomial (in T) terms            
      gibbs = coef_gibbs(ispec,polyorder_cp+1)
@@ -234,6 +242,10 @@ contains
            - coef_gibbs(ispec,polyorder_cp+3)*logT &
            - gibbs
      
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart       
+     
      return
   end subroutine evaluate_gibbs_at_node
 !! ------------------------------------------------------------------------------------------------
@@ -241,12 +253,19 @@ contains
      !! Sound speed from cp,Rmix and T (or prescribed by csq if isoT)
      real(rkind), intent(in) :: cp_local,Rgm_local,T_local
      real(rkind) ::  c
+     segment_tstart=omp_get_wtime()
+
 #ifdef isoT
      c = sqrt(csq)
 #else  
      c = dsqrt(cp_local*Rgm_local*T_local/(cp_local-Rgm_local))
 
 #endif      
+
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart  
+
   end function evaluate_sound_speed_at_node
 !! ------------------------------------------------------------------------------------------------  
   subroutine set_energy_on_bound(i,tmpT)
@@ -255,6 +274,8 @@ contains
      real(rkind),intent(in) :: tmpT
      integer(ikind) :: ispec
      real(rkind) :: enthalpy,Rgas_mix_local,cpispec,dummy_real
+     
+     segment_tstart= omp_get_wtime()
      
 #ifndef isoT              
         !! Initialise roE with K.E. term
@@ -278,6 +299,9 @@ contains
                     
 #endif
 
+     !! Profiling
+     segment_tend = omp_get_wtime()
+     segment_time_local(9) = segment_time_local(9) + segment_tend - segment_tstart  
        
      return
   end subroutine set_energy_on_bound 
