@@ -386,8 +386,8 @@ contains
      !!
      !! NODE   | grad (N)  | grad (T)  | LAP        | FILT
      !!  i0    |   FD      | 1DLABFM   | FD+1DLABFM | FD+1DLABFM
-     !!  i1    |   FD      | 1DLABFM   | FD+1DLABFM | LABFM m=4
-     !!  i2    | LABFM m=4 | LABFM m=4 | LABFM m=4  | FD+1DLABFM
+     !!  i1    |   FD      | 1DLABFM   | FD+1DLABFM | FD+1DLABFM
+     !!  i2    |   FD      | 1DLABFM   | FD+1DLABFM | FD+1DLABFM
      !!  i3    | LABFM m=6 | LABFM m=6 | LABFM m=6  | LABFM m=6
      !!  i4    | LABFM m=6 | LABFM m=6 | LABFM m=6  | LABFM m=6
      !! other  | LABFM m=8 | LABFM m=8 | LABFM m=8  | LABFM m=8    
@@ -443,6 +443,8 @@ contains
      !! Loop boundary nodes
      !! TO DO: re-arrange so computationally faster (fewer ifs) but harder to read...
      !! Not crucial, as this is preprocessing!
+
+     !! BOUNDARY: Normal operators --------------------------------------------
      do jj=1,nb
         i=boundary_list(jj)
         dx = s(i)
@@ -482,11 +484,12 @@ contains
      end do
 
 
-     !! First row normal derivatives
+     !! FIRST ROW: Normal operators -------------------------------------------
      do jj=1,nb   !! inefficient at the moment: loop all nodes, cycle those not in correct row...
         i=boundary_list(jj)+1
         dx = s(i)     
-        ij_w_grad(:,:,i) = zero;ij_w_lap(:,i) = zero!;ij_w_hyp(:,i)=zero      
+        ij_w_grad(:,:,i) = zero;ij_w_lap(:,i) = zero
+        ij_w_hyp(:,i)=zero      
         do k=1,ij_count(i)
            j=ij_link(k,i)   
            if(j.gt.npfb) cycle !! Eliminate halos and ghosts from search (entire FD stencil in one processor)              
@@ -503,23 +506,37 @@ contains
            if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  four/12.0d0/dx2              
            if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) = -one/12.0d0/dx2       
                     
-!           if(j.eq.fd_parent(i))                                   ij_w_hyp(k,i) = -one   !! 4th DERIV
-!           if(j.eq.i)                                              ij_w_hyp(k,i) =  zero
-!           if(node_type(j).eq.-2.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) = -6.0d0
-!           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) =  4.0d0
-!           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) = -one    
+           if(j.eq.fd_parent(i))                                   ij_w_hyp(k,i) = -one   !! 4th DERIV
+           if(j.eq.i)                                              ij_w_hyp(k,i) =  zero
+           if(node_type(j).eq.-2.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) = -6.0d0
+           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) =  4.0d0
+           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) = -one    
                      
         end do 
      end do       
      
-     !! Second row normal filter
+     !! SECOND ROW: Normal operators ------------------------------------------
      do jj=1,nb   !! inefficient at the moment: loop all nodes, cycle those not in correct row...
         i=boundary_list(jj)+2
         dx = s(i)     
-        ij_w_hyp(:,i)=zero      
+        ij_w_hyp(:,i)=zero
+        ij_w_grad(:,:,i) = zero
+        ij_w_lap(:,i) = zero                    
         do k=1,ij_count(i)
            j=ij_link(k,i)   
            if(j.gt.npfb) cycle !! Eliminate halos and ghosts from search (entire FD stencil in one processor)         
+
+           if(j.eq.fd_parent(i))                                   ij_w_grad(1,k,i) =  one/12.0d0/dx   !! FIRST DERIV
+           if(node_type(j).eq.-1.and.fd_parent(j).eq.fd_parent(i)) ij_w_grad(1,k,i) = -8.0d0/12.0d0/dx
+           if(j.eq.i)                                              ij_w_grad(1,k,i) =  zero/12.0d0/dx
+           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_grad(1,k,i) =  8.0d0/12.0d0/dx
+           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_grad(1,k,i) = -one/12.0d0/dx
+
+           if(j.eq.fd_parent(i))                                   ij_w_lap(k,i) = -one/12.0d0/dx2   !! 2ND DERIV
+           if(node_type(j).eq.-1.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  16.0d0/12.0d0/dx2
+           if(j.eq.i)                                              ij_w_lap(k,i) =  zero/12.0d0/dx2
+           if(node_type(j).eq.-3.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) =  16.0d0/12.0d0/dx2
+           if(node_type(j).eq.-4.and.fd_parent(j).eq.fd_parent(i)) ij_w_lap(k,i) = -one/12.0d0/dx2
 
            if(j.eq.fd_parent(i))                                   ij_w_hyp(k,i) = -one   !! 4th DERIV
            if(node_type(j).eq.-1.and.fd_parent(j).eq.fd_parent(i)) ij_w_hyp(k,i) =  4.0d0
@@ -540,7 +557,7 @@ contains
      allocate(amatt(nsizeG,nsizeG),amattt(nsizeG,nsizeG),amatthyp(nsizeG,nsizeG))
      allocate(bvect(nsizeG),bvectt(nsizeG),bvecthyp(nsizeG),xvec(nsizeG),gvec(nsizeG))
      
-     !! Boundaries only, set gradient, grad2 and hyp
+     !! BOUNDARY: Transverse operators ----------------------------------------
      do jj=1,nb
         i=boundary_list(jj)
         amatt=zero;amattt=zero;bvect=zero;bvectt=zero;xvec = zero;gvec = zero
@@ -614,180 +631,204 @@ contains
      end do         
      
      
-     !! First rows: set gradients and laplacians
-     do i=1,npfb
-        if(node_type(i).eq.-1) then
-        
-        
-           !! Find boundary parent, and evaluate gradient of resolution in boundary-tangential direction:
-           grads = zero
-           ii=fd_parent(i)           
-           do k=1,ij_count(ii)
-              j=ij_link(k,ii)
-              
-              grads = grads + (s(j)-s(ii))*ij_w_grad(2,k,ii)
-           end do
+     !! FIRST ROW: Transverse operators ---------------------------------------
+     do jj=1,nb
+        i=boundary_list(jj)+1
+                
+        !! Find boundary parent, and evaluate gradient of resolution in boundary-tangential direction:
+        grads = zero
+        ii=fd_parent(i)           
+        do k=1,ij_count(ii)
+           j=ij_link(k,ii)
+            
+           grads = grads + (s(j)-s(ii))*ij_w_grad(2,k,ii)
+        end do
            
-           !! Convert the gradient of s into the angle by which the tangent vector is rotated.
-           grads = -atan(grads)
+        !! Convert the gradient of s into the angle by which the tangent vector is rotated.
+        grads = -atan(grads)
                    
-           amatt=zero;bvect=zero;xvec = zero;gvec = zero
-           amatthyp=zero;bvecthyp=zero     
-           amattt=zero;bvectt=zero
-           xt=-rnorm(i,2);yt=rnorm(i,1)  !! unit tangent vector
-           xn=rnorm(i,1);yn=rnorm(i,2)  !! unit normal vector
+        amatt=zero;bvect=zero;xvec = zero;gvec = zero
+        amatthyp=zero;bvecthyp=zero     
+        amattt=zero;bvectt=zero
+        xt=-rnorm(i,2);yt=rnorm(i,1)  !! unit tangent vector
+        xn=rnorm(i,1);yn=rnorm(i,2)  !! unit normal vector
            
-           !! Rotate tangent vector to account for resolution gradient
-           xt = cos(grads)*(-rnorm(i,2)) - sin(grads)*rnorm(i,1)
-           yt = sin(grads)*(-rnorm(i,2)) + cos(grads)*rnorm(i,1)
+        !! Rotate tangent vector to account for resolution gradient
+        xt = cos(grads)*(-rnorm(i,2)) - sin(grads)*rnorm(i,1)
+        yt = sin(grads)*(-rnorm(i,2)) + cos(grads)*rnorm(i,1)
            
-           do k=1,ij_count(i)
-              j=ij_link(k,i)                   
+        do k=1,ij_count(i)
+           j=ij_link(k,i)                   
 
-              ii=node_type(j)
-              if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
+           ii=node_type(j)
+           if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
            
-                 rij = rp(i,:)-rp(j,:)  !! ij-vector
-                 x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
-                 y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
-                 if(i.eq.j) x=zero !! avoid NaN in above line         
+              rij = rp(i,:)-rp(j,:)  !! ij-vector
+              x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
+              y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
+              if(i.eq.j) x=zero !! avoid NaN in above line         
            
-                 xvec(1:nsizeG) = monomials1D(x/h(i))
+              xvec(1:nsizeG) = monomials1D(x/h(i))
                
-                 ff1 = fac(abs(x/h(i)))
-                 x = x/h(i)
-           
-                 gvec(1:nsizeG) = abfs1D(x,ff1)
-                      
-                 do i1=1,nsizeG
-                    do i2=1,nsizeG
-                       amatt(i1,i2) = amatt(i1,i2) + xvec(i1)*gvec(i2)
-                    end do
-                 end do            
-              end if        
-           end do
-           amattt = amatt;amatthyp = amatt
+              ff1 = fac(abs(x/h(i)))
+              x = x/h(i)
+        
+              gvec(1:nsizeG) = abfs1D(x,ff1)
+                    
+              do i1=1,nsizeG
+                 do i2=1,nsizeG
+                    amatt(i1,i2) = amatt(i1,i2) + xvec(i1)*gvec(i2)
+                 end do
+              end do            
+           end if        
+        end do
+        amattt = amatt;amatthyp = amatt
 
-           !! Solve system for transverse deriv   
-           bvect(:)=zero;bvect(1)=one;i1=0;i2=0;nsize=nsizeG
-           call svd_solve(amatt,nsize,bvect)  
+        !! Solve system for transverse deriv   
+        bvect(:)=zero;bvect(1)=one;i1=0;i2=0;nsize=nsizeG
+        call svd_solve(amatt,nsize,bvect)  
            
-           !! Solve system for transverse 2nd deriv   
-           bvectt(:)=zero;bvectt(2)=one;i1=0;i2=0;nsize=nsizeG
-           call svd_solve(amattt,nsize,bvectt)           
+        !! Solve system for transverse 2nd deriv   
+        bvectt(:)=zero;bvectt(2)=one;i1=0;i2=0;nsize=nsizeG
+        call svd_solve(amattt,nsize,bvectt)           
            
-           !! Solve system for transverse hyperviscous filter
-           bvecthyp(:)=zero;bvecthyp(6)=one;i1=0;i2=0;nsize=nsizeG
-           call svd_solve(amatthyp,nsize,bvecthyp)                                         
+        !! Solve system for transverse hyperviscous filter
+        bvecthyp(:)=zero;bvecthyp(6)=one;i1=0;i2=0;nsize=nsizeG
+        call svd_solve(amatthyp,nsize,bvecthyp)                                         
 
-           do k=1,ij_count(i)
-              j=ij_link(k,i)                   
+        do k=1,ij_count(i)
+           j=ij_link(k,i)                   
 
-              !! Transverse derivatives...
-              ii=node_type(j)
-              if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
-                 rij = rp(i,:)-rp(j,:)  !! ij-vector
-                 x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
-                 y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
-                 if(i.eq.j) x=zero !! avoid NaN in above line              
+           !! Transverse derivatives...
+           ii=node_type(j)
+           if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
+              rij = rp(i,:)-rp(j,:)  !! ij-vector
+              x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
+              y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
+              if(i.eq.j) x=zero !! avoid NaN in above line              
               
-                 ff1 = fac(abs(x/h(i)))
-                 x = x/h(i)
+              ff1 = fac(abs(x/h(i)))
+              x = x/h(i)
            
-                 gvec(1:nsizeG) = abfs1D(x,ff1)
+              gvec(1:nsizeG) = abfs1D(x,ff1)
               
-                 !! Gradient and hyperviscous weights
-                 ij_w_grad(2,k,i) = dot_product(bvect,gvec)/h(i)
-                 ij_w_lap(k,i) = ij_w_lap(k,i) + dot_product(bvectt,gvec)/h(i)/h(i)
-!                 ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)                                          
-              
-              end if    
+              !! Gradient and hyperviscous weights
+              ij_w_grad(2,k,i) = dot_product(bvect,gvec)/h(i)
+              ij_w_lap(k,i) = ij_w_lap(k,i) + dot_product(bvectt,gvec)/h(i)/h(i)
+              ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)  
+           end if               
+        end do
            
-           end do
+        !! Loop over all neighbours and rotate transverse derivative to be aligned with boundary tangent
+        do k=1,ij_count(i)
+           j=ij_link(k,i)           
+           ij_w_grad(2,k,i) = (one/cos(grads))*ij_w_grad(2,k,i) - tan(grads)*ij_w_grad(1,k,i)
+        end do
            
-           !! Loop over all neighbours and rotate transverse derivative to be aligned with boundary tangent
-           do k=1,ij_count(i)
-              j=ij_link(k,i)
-              
-              ij_w_grad(2,k,i) = (one/cos(grads))*ij_w_grad(2,k,i) - tan(grads)*ij_w_grad(1,k,i)
-           end do
-           
-        end if
      end do
      
-     !! Second rows: filter only
-     do i=1,npfb
-        if(node_type(i).eq.-2) then
-        
+     !! SECOND ROW: Transverse operators ----------------------------------------
+     do jj=1,nb
+        i=boundary_list(jj)+2
+
+        !! Find boundary parent, and evaluate gradient of resolution in boundary-tangential direction:
+        grads = zero
+        ii=fd_parent(i)           
+        do k=1,ij_count(ii)
+           j=ij_link(k,ii)
+              
+           grads = grads + (s(j)-s(ii))*ij_w_grad(2,k,ii)
+        end do
+           
+        !! Convert the gradient of s into the angle by which the tangent vector is rotated.
+        grads = -atan(grads)
                    
-           amatt=zero;xvec = zero;gvec = zero
-           bvecthyp=zero     
-           xt=-rnorm(i,2);yt=rnorm(i,1)  !! unit tangent vector
-           xn=rnorm(i,1);yn=rnorm(i,2)  !! unit normal vector
+        amatt=zero;bvect=zero;xvec = zero;gvec = zero
+        amatthyp=zero;bvecthyp=zero     
+        amattt=zero;bvectt=zero
+        xt=-rnorm(i,2);yt=rnorm(i,1)  !! unit tangent vector
+        xn=rnorm(i,1);yn=rnorm(i,2)  !! unit normal vector
            
-           !! Rotate tangent vector to account for resolution gradient
-           xt = cos(grads)*(-rnorm(i,2)) - sin(grads)*rnorm(i,1)
-           yt = sin(grads)*(-rnorm(i,2)) + cos(grads)*rnorm(i,1)
-           
-           do k=1,ij_count(i)
-              j=ij_link(k,i)                   
+        !! Rotate tangent vector to account for resolution gradient
+        xt = cos(grads)*(-rnorm(i,2)) - sin(grads)*rnorm(i,1)
+        yt = sin(grads)*(-rnorm(i,2)) + cos(grads)*rnorm(i,1)
+                                     
+        do k=1,ij_count(i)
+           j=ij_link(k,i)                   
 
-              ii=node_type(j)
-              if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
+           ii=node_type(j)
+           if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
            
-                 rij = rp(i,:)-rp(j,:)  !! ij-vector
-                 x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
-                 y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
-                 if(i.eq.j) x=zero !! avoid NaN in above line         
+              rij = rp(i,:)-rp(j,:)  !! ij-vector
+              x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
+              y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
+              if(i.eq.j) x=zero !! avoid NaN in above line         
            
-                 xvec(1:nsizeG) = monomials1D(x/h(i))
+              xvec(1:nsizeG) = monomials1D(x/h(i))
                
-                 ff1 = fac(abs(x/h(i)))
-                 x = x/h(i)
+              ff1 = fac(abs(x/h(i)))
+              x = x/h(i)
            
-                 gvec(1:nsizeG) = abfs1D(x,ff1)
+              gvec(1:nsizeG) = abfs1D(x,ff1)
                       
-                 do i1=1,nsizeG
-                    do i2=1,nsizeG
-                       amatt(i1,i2) = amatt(i1,i2) + xvec(i1)*gvec(i2)
-                    end do
-                 end do            
-              end if        
-           end do
-
-           !! Solve system for transverse hyperviscous filter
-           bvecthyp(:)=zero;bvecthyp(6)=one;i1=0;i2=0;nsize=nsizeG
-           call svd_solve(amatt,nsize,bvecthyp)                                         
-
-           do k=1,ij_count(i)
-              j=ij_link(k,i)                   
-
-              !! Transverse derivatives...
-              ii=node_type(j)
-              if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
-                 rij = rp(i,:)-rp(j,:)  !! ij-vector
-                 x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
-                 y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
-                 if(i.eq.j) x=zero !! avoid NaN in above line              
-              
-                 ff1 = fac(abs(x/h(i)))
-                 x = x/h(i)
+              do i1=1,nsizeG
+                 do i2=1,nsizeG
+                    amatt(i1,i2) = amatt(i1,i2) + xvec(i1)*gvec(i2)
+                 end do
+              end do            
+           end if        
+        end do
+        amattt = amatt
+        amatthyp =amatt
+                     
+        !! Solve system for transverse deriv   
+        bvect(:)=zero;bvect(1)=one;i1=0;i2=0;nsize=nsizeG
+        call svd_solve(amatt,nsize,bvect)  
            
-                 gvec(1:nsizeG) = abfs1D(x,ff1)
-              
-                 !! Gradient and hyperviscous weights
-                 ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)                                          
-              
-              end if    
+        !! Solve system for transverse 2nd deriv   
+        bvectt(:)=zero;bvectt(2)=one;i1=0;i2=0;nsize=nsizeG
+        call svd_solve(amattt,nsize,bvectt)           
            
-           end do
-                      
-        end if
-     end do     
-    
+        !! Solve system for transverse hyperviscous filter
+        bvecthyp(:)=zero;bvecthyp(6)=one;i1=0;i2=0;nsize=nsizeG
+        call svd_solve(amatthyp,nsize,bvecthyp)              
+
+        do k=1,ij_count(i)
+           j=ij_link(k,i)                   
+
+           !! Transverse derivatives...
+           ii=node_type(j)
+           if(ii.eq.node_type(i))then !! only look through nodes on the same "layer"
+              rij = rp(i,:)-rp(j,:)  !! ij-vector
+              x = -dot_product(rij(1:2),(/xt,yt/)) !! relative coord of j (to i) along tangent
+              y = -dot_product(rij(1:2),(/xn,yn/)) !! relative coord of j (to i) along normal
+              if(i.eq.j) x=zero !! avoid NaN in above line              
+              
+              ff1 = fac(abs(x/h(i)))
+              x = x/h(i)
+           
+              gvec(1:nsizeG) = abfs1D(x,ff1)
+              
+              !! Gradient and hyperviscous weights
+              ij_w_grad(2,k,i) = dot_product(bvect,gvec)/h(i)
+              ij_w_lap(k,i) = ij_w_lap(k,i) + dot_product(bvectt,gvec)/h(i)/h(i)                                
+              ij_w_hyp(k,i) = ij_w_hyp(k,i) + dot_product(bvecthyp,gvec)                                                       
+           end if               
+        end do
+
+        !! Loop over all neighbours and rotate transverse derivative to be aligned with boundary tangent
+        do k=1,ij_count(i)
+           j=ij_link(k,i)           
+           ij_w_grad(2,k,i) = (one/cos(grads))*ij_w_grad(2,k,i) - tan(grads)*ij_w_grad(1,k,i)
+        end do
+                                 
+
+     end do       
        
      !! Clear 1D labfm vectors and matrices       
      deallocate(bvect,bvectt,gvec,xvec,amatt,amattt)
+     
+     !! ROTATIONS AND ADJUSTMENTS ---------------------------------------------
      
      !! Wall boundaries: find local radius of curvature
      !! N.B.: find 1/radius, as it is only used as denominator, so we are wary of instances when R->infinity
@@ -818,15 +859,20 @@ contains
         end if
      end do         
           
-     !! First row, add divergence term to Laplacian
+     !! Add divergence term to Laplacian for first and second rows
      do jj=1,nb
         i=boundary_list(jj) + 1
         if(node_type(i-1).eq.0) then
            ij_w_lap(:,i) = ij_w_lap(:,i) + ij_w_grad(1,:,i)*ooRcurve(jj)/(one+ooRcurve(jj)*s(i))
         end if
+        i=boundary_list(jj) + 2
+        if(node_type(i-2).eq.0) then
+           ij_w_lap(:,i) = ij_w_lap(:,i) + ij_w_grad(1,:,i)*ooRcurve(jj)/(one+two*ooRcurve(jj)*s(i))
+        end if
      end do     
           
      !! Wall boundary: map grad2 and laplacian onto orthog. boundary oriented coords.
+     !! N.B. Eqns are solved in bound frame on walls, so no need to rotate first derivatives
      do jj=1,nb  
         i=boundary_list(jj)
         if(node_type(i).eq.0)then
@@ -838,17 +884,23 @@ contains
         end if                      
      end do
 
-     !! First row: map gradients onto x-y frame
-     do jj=1,npfb-nb
-        i = internal_list(jj)
-        if(node_type(i).eq.-1) then  !! For first row
-           xn = rnorm(i,1);yn=rnorm(i,2)
-           Jinv(1,1)=xn;Jinv(1,2)=-yn;Jinv(2,1)=yn;Jinv(2,2)=xn   !! Jacobian for normal-tangent to x-y
-           do k=1,ij_count(i)             
-              grad_tn = ij_w_grad(:,k,i)      !! Store weights in normal-tangent FoR             
-              ij_w_grad(:,k,i) = matmul(Jinv,grad_tn) !! First derivative weights in x-y FoR
-           end do
-        end if
+     !! First and Second rows: Map first derivatives onto x-y frame
+     do jj=1,nb
+        i=boundary_list(jj)
+        xn = rnorm(i,1);yn=rnorm(i,2)
+        Jinv(1,1)=xn;Jinv(1,2)=-yn;Jinv(2,1)=yn;Jinv(2,2)=xn   !! Jacobian for normal-tangent to x-y
+            
+        i = boundary_list(jj) + 1
+        do k=1,ij_count(i)             
+           grad_tn = ij_w_grad(:,k,i)      !! Store weights in normal-tangent FoR             
+           ij_w_grad(:,k,i) = matmul(Jinv,grad_tn) !! First derivative weights in x-y FoR
+        end do
+
+        i = boundary_list(jj)+2
+        do k=1,ij_count(i)             
+           grad_tn = ij_w_grad(:,k,i)      !! Store weights in normal-tangent FoR             
+           ij_w_grad(:,k,i) = matmul(Jinv,grad_tn) !! First derivative weights in x-y FoR
+        end do
      end do
 
      write(6,*) "finished boundary weights"
@@ -1258,7 +1310,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
            filter_coeff(i) = (two/three)/lsum
         endif
               
-           !! Set the filter coefficient (2/3 will result in A=1/3 at target wavenumber)
+        !! Set the filter coefficient (2/3 will result in A=1/3 at target wavenumber)
 
                         
 
@@ -1266,7 +1318,7 @@ write(6,*) i,i1,"stopping because of max reduction limit",ii
         if(node_type(i).lt.0) then
            if(node_type(fd_parent(i)).eq.0) then !! Walls only
               if(node_type(i).eq.-1) filter_coeff(i) = filter_coeff(i)*oosqrt2!*half!*half
-              if(node_type(i).eq.-2) filter_coeff(i) = filter_coeff(i)*half!*oosqrt2
+              if(node_type(i).eq.-2) filter_coeff(i) = filter_coeff(i)*half !half
               if(node_type(i).eq.-3) filter_coeff(i) = filter_coeff(i)*oosqrt2!*half
               if(node_type(i).eq.-4.or.node_type(i).eq.998) filter_coeff(i) = filter_coeff(i)*oosqrt2!*half 
            end if

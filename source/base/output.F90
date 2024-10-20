@@ -271,7 +271,7 @@ contains
            tmpVort = vort(i)
                 
            !! Pass heat release rate to alpha_out?
-           alpha_out(i) = hrr(i)
+!           alpha_out(i) = hrr(i)
 
 #ifdef dim3
            write(20,*) ro(i),u(i),v(i),w(i),tmpVort,tmpT,p(i)-p_ref,alpha_out(i),Yspec(i,1:nspec_out)*tmpro       

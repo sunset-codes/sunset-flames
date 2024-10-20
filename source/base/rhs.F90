@@ -151,10 +151,12 @@ contains
   end subroutine calc_all_rhs
 !! ------------------------------------------------------------------------------------------------
   subroutine calc_rhs_ro
+     use mpi_transfers
      !! Construct the RHS for ro-equation
      integer(ikind) :: i,j
      real(rkind),dimension(dims) :: tmp_vec
-     real(rkind) :: tmp_scal
+     real(rkind) :: tmp_scal,errorval,L2sum_abs,L2sum_err
+
     
      !! Build RHS for internal nodes
      !$omp parallel do private(i,tmp_vec,tmp_scal)

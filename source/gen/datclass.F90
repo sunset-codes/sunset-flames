@@ -288,15 +288,20 @@ case(8) !! Arrays of cylinders for lean H2 flame dynamics tests
 !! ------------------------------------------------------------------------------------------------
 case(9) !! Porous cylinder array
 
-     nbx = 10  !! Number of cylinders along x
-     nby = 6   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
+!! JK NOTES TO HB
+!! Increase nby to increase cross-stream domain size
+!! Increase xl, and adjust the "-5.0d0*D_cyl..." in the definitions of b_node( to make the domain longer
+!! For detailed chemistry, likely need slightly finer resolution.
+
+     nbx = 4  !! Number of cylinders along x
+     nby = 1   !! Number of cylinders in y    (I think nbx and nby should be even, but it might be okay if not).
      nbtot = nbx*nby + nbx/2
 
      D_cyl = 1.0d0;h0 = 0.5d0*D_cyl  !! Cylinder diameter (unity)
-     S_cyl = (5.0d0/3.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
+     S_cyl = (10.0d0/6.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
      yl = dble(max(nby,1))*S_cyl                      !! Channel width 
-     xl = 20.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
-     dx0 = D_cyl/66.66667d0                  !! Baseline resolution
+     xl = 10.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
+     dx0 = D_cyl/80.0d0                  !! Baseline resolution
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
 !     yl=yl/2.0
@@ -305,10 +310,10 @@ case(9) !! Porous cylinder array
      allocate(b_node(nb_patches,2),b_edge(nb_patches,2))
      allocate(b_type(nb_patches))
      b_type(:) = (/ 3, 2, 3, 1/)  
-     b_node(1,:) = (/ -15.0d0*D_cyl, -0.5d0*yl /)   !-12
-     b_node(2,:) = (/ -15.0d0*D_cyl+xl, -0.5d0*yl /)
-     b_node(3,:) = (/ -15.0d0*D_cyl+xl, 0.5d0*yl /)
-     b_node(4,:) = (/ -15.0d0*D_cyl, 0.5d0*yl /)
+     b_node(1,:) = (/ -5.0d0*D_cyl, -0.5d0*yl /)   !-12
+     b_node(2,:) = (/ -5.0d0*D_cyl+xl, -0.5d0*yl /)
+     b_node(3,:) = (/ -5.0d0*D_cyl+xl, 0.5d0*yl /)
+     b_node(4,:) = (/ -5.0d0*D_cyl, 0.5d0*yl /)
      nb_blobs=nbtot
      if(nb_blobs.ne.0) then
         open(unit=191,file="blob_fcoefs.in")
@@ -348,7 +353,7 @@ case(9) !! Porous cylinder array
         end if
      else
         n_blob_coefs=6
-     end if
+     end if     
 
      dxmin = dx0/1.0d0
      dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=6.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
@@ -795,10 +800,10 @@ end subroutine quicksort
         endif    
         
      else if(itest.eq.9) then   
-           if(x.le.-1.0d0) then
+           if(x.le.0.0d0) then !-1
               dxio = dx_in
-           else if(x.le.0.0d0) then
-              temp = (x+1.0d0)/1.0d0
+           else if(x.le.1.0d0) then !0
+              temp = (x+0.0d0)/1.0d0
               dxio = dx_in*(1.0d0-temp) + dx_out*temp
            else
               dxio = dx_out              

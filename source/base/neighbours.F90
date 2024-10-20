@@ -291,18 +291,7 @@ contains
        
        !! Now sort by value of rij2
        call quicksort_neighbours(i,rij2,1,ij_count(i))       
-    
-       keepgoing = .true.
-       k=0
-       do while(keepgoing.and.k.le.ij_count(i,pmax))
-          k=k+1
-          j=ij_link(k,i)
-          rij = rp(i,:) - rp(j,:)
-          rad2 = dot_product(rij,rij)
-              
-    
-    
-    
+        
     end do
     !$omp end parallel do
     
