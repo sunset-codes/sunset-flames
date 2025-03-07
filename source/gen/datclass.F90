@@ -301,7 +301,7 @@ case(9) !! Porous cylinder array
      S_cyl = (10.0d0/6.0d0)*D_cyl  !1.25           !! Cylinder spacing (multiples of D_cyl)
      yl = dble(max(nby,1))*S_cyl                      !! Channel width 
      xl = 10.0d0*D_cyl !3.0d0*S_cyl + dble(nbx)*r3o2*S_cyl          !! Channel length     
-     dx0 = D_cyl/80.0d0                  !! Baseline resolution
+     dx0 = D_cyl/75.0d0                  !! Baseline resolution
      xbcond_L=0;xbcond_U=0;ybcond_L=1;ybcond_U=1
      
 !     yl=yl/2.0
@@ -355,8 +355,8 @@ case(9) !! Porous cylinder array
         n_blob_coefs=6
      end if     
 
-     dxmin = dx0/1.0d0
-     dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=6.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
+     dxmin = dx0/1.7d0
+     dx_wall=dxmin;dx_in=1.0d0*dx0;dx_out=4.0d0*dx0;dx_wallio=dx_in  !! dx for solids and in/outs...!!       
      
 !! ------------------------------------------------------------------------------------------------     
 end select
@@ -455,8 +455,8 @@ end select
         !! Place a particle here
         if(keepgoing) then
            ipart = ipart + 1
-           call random_number(temp);temp = temp -0.5d0;xp(ipart) = pdp_x(j) + temp*dxmin*0.5d0
-           call random_number(temp);temp = temp -0.5d0;yp(ipart) = pdp_y(j) + temp*dxmin*0.5d0
+           call random_number(temp);temp = temp -0.5d0;xp(ipart) = pdp_x(j) + temp*dxmin*0.0d0
+           call random_number(temp);temp = temp -0.5d0;yp(ipart) = pdp_y(j) + temp*dxmin*0.0d0
            dxp(ipart) = dx  
            if(dist2bound.le.4.5d0*dx) node_type(ipart)=998
 !           if(dist2bound.le.3.0d0*dx) node_type(ipart)=997
@@ -471,7 +471,7 @@ end select
               idown = 0
               thdown = -0.49999999d0*pi
               keepgoing = .false.
-           else if(pdp_dist2(i).ge.dx*dx) then      !! Distance??        
+           else if(pdp_dist2(i).ge.dx*dx*(0.8725**2)) then      !! Distance??        
               idown = i
               thdown = atan2((pdp_y(idown)-y),(pdp_x(idown)-x))
               keepgoing = .false.    
@@ -486,7 +486,7 @@ end select
               iup = npdps+1
               thup = 0.4999999999d0*pi
               keepgoing = .false.              
-           else if(pdp_dist2(i).ge.dx*dx) then !! Distance
+           else if(pdp_dist2(i).ge.dx*dx*(0.8725**2)) then !! Distance
               iup = i
               thup = atan2((pdp_y(iup)-y),(pdp_x(iup)-x))              
               keepgoing = .false.
