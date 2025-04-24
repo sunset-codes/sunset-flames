@@ -151,11 +151,10 @@ contains
   end subroutine calc_all_rhs
 !! ------------------------------------------------------------------------------------------------
   subroutine calc_rhs_ro
-     use mpi_transfers
      !! Construct the RHS for ro-equation
      integer(ikind) :: i,j
      real(rkind),dimension(dims) :: tmp_vec
-     real(rkind) :: tmp_scal,errorval,L2sum_abs,L2sum_err
+     real(rkind) :: tmp_scal
 
     
      !! Build RHS for internal nodes
@@ -362,7 +361,7 @@ contains
            gradroDY = roVY(i,:) + Y_thisspec(i)*gradroMdiff(i,:)
                      
            !! Augment molecular diffusion terms to include mixture averaged driving forces 
-           roVY(i,:) = roVY(i,:) + roDY*(mxav_store1(i,:) + mxav_store2(i,:)*molar_mass(ispec))                      
+           roVY(i,:) = roVY(i,:) + roDY*(mxav_store1(i,:) + mxav_store2(i,:)*molar_mass(ispec)) 
            divroVY = divroVY + dot_product(gradroDY,mxav_store1(i,:)-mxav_store2(i,:)*molar_mass(ispec)) &
                              + roDY*(mxav_store3(i) + mxav_store4(i)*molar_mass(ispec))        
 
@@ -672,6 +671,11 @@ contains
         body_force_u = tmpro*grav(1) + driving_force(1)
         body_force_v = tmpro*grav(2) + driving_force(2)
         body_force_w = tmpro*grav(3) + driving_force(3)
+        
+        !! Kolmogorov forcing if required
+#ifdef klmgrv
+        body_force_u = body_force_u + 16.0d0*(visc(i)/ro(i))*sin(4.0*rp(i,2))
+#endif        
 
         !! Store u.(F_visc + F_body/ro) for use in energy eqn later 
         store_diff_E(i) = store_diff_E(i) + u(i)*(f_visc_u + body_force_u) &

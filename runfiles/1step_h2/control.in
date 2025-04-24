@@ -51,13 +51,5 @@
 !! Initial base flow (0=zero, 1=uniform, 2=parabolic)
 1
 
-!! Flame position (x,y), dimensional thickness, T_hot, perturbation size, number of perturbation modes
-1.0d0 0.0d0 4.0d-4 2.366d3, 0.5d0, 12
-
-!! Turbulent initial velocity field (0=no, 1=yes), dimensional length scale and dimensionless intensity
-0 2.0d-4 5.0d0
-
-!! Density stratification (0=no, 1=yes)
-0
 
 
