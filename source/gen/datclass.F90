@@ -573,9 +573,9 @@ end select
   write(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
   do i=1,npfb
      if(node_type(i).ge.0.and.node_type(i).le.2) then
-        write(13,*) xp(i), yp(i),node_type(i),xnorm(i),ynorm(i),dxp(i)
+        write(13,*) i,xp(i), yp(i),node_type(i),xnorm(i),ynorm(i),dxp(i)
      else
-        write(13,*) xp(i), yp(i),node_type(i),0.0d0,0.0d0,dxp(i)
+        write(13,*) i,xp(i), yp(i),node_type(i),0.0d0,0.0d0,dxp(i)
      end if
   end do
   close(13)

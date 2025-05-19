@@ -255,8 +255,8 @@ contains
         open(unit = 20,file=fname)  
         write(20,*) "!! FIELDS FILE HEADER !!"
         write(20,*) np_out_local
-        write(20,*) emax_np1,emax_n,emax_nm1,dt
         write(20,*) eflow_nm1,sum_eflow,driving_force
+        write(20,*) emax_np1,emax_n,emax_nm1,dt
         write(20,*) "!! END HEADER !!"
                
         do i=1,np_out_local
@@ -363,9 +363,9 @@ contains
      do i=1,np_out_local
         
 #ifdef dim3
-        write(20,*) rp(i,1),rp(i,2),rp(i,3),s(i),h(i),node_type(i)    
+        write(20,*) global_index(i),rp(i,1),rp(i,2),rp(i,3),s(i),h(i),node_type(i)    
 #else
-        write(20,*) rp(i,1),rp(i,2),s(i),h(i),node_type(i)
+        write(20,*) global_index(i),rp(i,1),rp(i,2),s(i),h(i),node_type(i)
 !        write(20,*) rp(i,1)+0.2*dble(iprocX),rp(i,2)+0.1*dble(iprocY),s(i),h(i),node_type(i)
 #endif
      end do

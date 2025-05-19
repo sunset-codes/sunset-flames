@@ -37,6 +37,8 @@ module common_parameter
 
   !! (NODE-SET) Discretisation related parameters
   integer(ikind) ,parameter :: dims = 3
+  !! Note, there are lots of arrays which are sized "ithree" even if flow is two-dimensional
+  integer(ikind), parameter :: ithree = 3   
 #if order==4
   real(rkind), parameter :: hovs = 1.8d0   
   real(rkind), parameter :: hovs_bound = 2.1d0 

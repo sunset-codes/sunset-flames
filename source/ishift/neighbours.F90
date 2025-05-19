@@ -179,7 +179,7 @@ contains
     !! node i, then goes through every cell jc adjacent to ic to check for neighbours  
     integer(ikind) :: i,ic
     integer(ikind) :: jc,kc
-    real(rkind),dimension(dims) :: rpi
+    real(rkind),dimension(ithree) :: rpi
 
     ij_count=0
     ij_link=0 !neighbour list arrays
@@ -211,7 +211,7 @@ contains
     real(rkind),dimension(:),intent(in) :: ri
     real(rkind) :: rr2tmp,rad,stencilsize2
     integer(ikind) :: j,jj,is,ie
-    real(rkind),dimension(dims) :: rij
+    real(rkind),dimension(ithree) :: rij
     
     if(nc(jc).ne.0)then !! if the cell isn't empty
        stencilsize2=(h(ii)*ss)**2

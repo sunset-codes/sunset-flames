@@ -26,7 +26,7 @@ contains
      !! -----:  vrelation(j)=2 means that u(j) = -u(i), v(j) =  v(i)
      !! -----:  vrelation(j)=3 means that u(j) =  u(i), v(j) = -v(i)
      !! -----:  vrelation(j)=4 means that u(j) = -u(i), v(j) = -v(i)
-    real(rkind),dimension(dims) :: rcorn
+    real(rkind),dimension(ithree) :: rcorn
     real(rkind) :: cdist
     integer(ikind) :: i,j,imp,k,ybcond_U_m,ybcond_L_m
     integer(ikind) :: nmirror,nmirror_esti

@@ -773,7 +773,7 @@ contains
 !! ------------------------------------------------------------------------------------------------
   subroutine load_restart_file
      !! Load initial conditions from a dump file
-     integer(ikind) :: k,i,j
+     integer(ikind) :: k,i,j,dummy_int
      real(rkind) :: tmp,tmpro
      character(70) :: fname,fname2  
 
@@ -794,10 +794,15 @@ contains
      !! Load the initial conditions
      do i=1,npfb
 #ifdef dim3
-        read(15,*) tmp,tmp,tmp,tmp,h(i),k
+        read(15,*) dummy_int,tmp,tmp,tmp,tmp,h(i),k
 #else
-        read(15,*) tmp,tmp,tmp,h(i),k
+        read(15,*) dummy_int,tmp,tmp,tmp,h(i),k
 #endif        
+        if(dummy_int.ne.global_index(i)) then
+           write(6,*) "ERROR: global index mismatch.",dummy_int,global_index(i)
+           write(6,*)
+           stop
+        end if
         if(k.ne.node_type(i)) then
            write(6,*) "ERROR: Problem in restart file. STOPPING."
 #ifdef mp
@@ -813,8 +818,8 @@ contains
      open(14,file=fname)
      read(14,*) !! Skip line
      read(14,*) k
+     read(14,*) eflow_nm1,sum_eflow,driving_force     
      read(14,*) emax_np1,emax_n,emax_nm1,dt
-     read(14,*) eflow_nm1,sum_eflow,driving_force
      read(14,*) !! Skip line
      if(k.ne.npfb) write(6,*) "WARNING, expecting problem in restart. FIELDS FILE."
 

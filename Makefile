@@ -15,6 +15,7 @@
 # tarout     Compress output files (1) or don't (0)                                    (default: 0)
 # sorduf     Include Soret and Dufour effects (1) or don't (0)                         (default: 0)
 # rrspecial  Add some special modifications to reaction rates (1) or don't (0)         (default: 0)
+# klmgrv     Add Kolmogorov forcing (1) or don't (0)                                   (default: 0)
 # -------------------------------------------------------------------------------------------------
 #
 # EXAMPLE USAGE:
@@ -121,6 +122,11 @@ ifeq ($(sorduf),1)
 FFLAGS += -Dsorduf
 endif
 
+# Kolmogorov flow
+ifeq ($(klmgrv),1)
+FFLAGS += -Dklmgrv
+endif
+
 LDFLAGS := -fopenmp -m64
 ###### -lopenblas 
 
@@ -163,4 +169,6 @@ clean:
 	rm -vf ./data_out/statistics/*.out
 	rm -vf ./paraview_files/LAYER*
 	rm -vf ./data_out/*.tar.gz
+	rm -vf ./restart/nodes*
+	rm -vf ./restart/fields*
 

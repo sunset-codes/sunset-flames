@@ -9,7 +9,7 @@ module inputoutput
   implicit none
 
   real(rkind),dimension(:),allocatable :: x,y,xn,yn,ds  !! Properties for post-shift tidying
-  integer(ikind),dimension(:),allocatable :: nt  
+  integer(ikind),dimension(:),allocatable :: nt,gi  
   
   integer(ikind),dimension(:),allocatable :: nband,effective_nband 
   integer(ikind),dimension(:),allocatable :: nblock,effective_nblock 
@@ -20,20 +20,17 @@ module inputoutput
   !! Local hovs for shifting
   real(rkind),parameter :: hovs_local = 2.5d0
   
-  real(rkind),parameter :: coef_diffusion=0.2d0 !0.4d0
+  real(rkind),parameter :: coef_diffusion=0.1d0 !0.4d0
   integer(ikind),parameter :: maxiters_diffusion = 1000
-  integer(ikind) :: nbw,nbio
-  integer(ikind),parameter :: nrio=4
-  integer(ikind),parameter :: nrw=4  !! Number of rows
 
 contains
 !! ------------------------------------------------------------------------------------------------  
    subroutine shift_only
      !! Reads in boundary patches
      use boundaries
-     integer(ikind) i,j,ii,jj,npfb_tmp,k
+     integer(ikind) i,j,ii,jj,npfb_tmp,k,dummy_int
      real(rkind) :: ns,dummy,prox,rad,radmin,dx,dy,smag
-     real(rkind),dimension(dims) :: rij
+     real(rkind),dimension(ithree) :: rij
      real(rkind),dimension(:,:),allocatable :: tmp_vec
      integer(ikind) :: shiftflag
 
@@ -47,28 +44,24 @@ contains
      !! Calculate some useful constants
      smax = dummy;h0 = hovs_local*dummy;sup_size = ss*h0;h2=h0*h0;h3=h2*h0
           
-     allocate(rp(4*npfb,dims),rnorm(4*npfb,dims),h(4*npfb),s(4*npfb));rp=0.0d0;rnorm=0.0d0
+     allocate(rp(4*npfb,ithree),rnorm(4*npfb,ithree),h(4*npfb),s(4*npfb));rp=0.0d0;rnorm=0.0d0
      allocate(node_type(4*npfb));node_type=0
      allocate(fd_parent(2*npfb));fd_parent=0
           
      !! Load all nodes. Build FD stencils near boundaries on the fly.
      npfb_tmp = npfb
      nb = 0;ii = 0
-     nbio=0 !! Counter for io bound nodes
-     nbw=0 !! counter for wall bound nodes
     
-     write(6,*) "npfb,nb",npfb,nb 
      do i=1,npfb_tmp
         ii = ii + 1
-        read(13,*) rp(ii,1:2),jj,rnorm(ii,1:2),dummy
+        read(13,*) dummy_int,rp(ii,1:2),jj,rnorm(ii,1:2),dummy
         h(ii) = dummy*hovs_local
         s(ii) = dummy
         node_type(ii) = jj
-        if(jj.eq.0) then !! If it is a solid boundary node
+        if(jj.ge.0.and.jj.le.2) then !! If it is a boundary node
            k = ii !! k is the index of the parent node
            nb = nb + 1
-           nbw = nbw + 1
-           do j=1,nrw  !! Make 2 additional nodes   !! NEWBC
+           do j=1,4  !! Make 4 additional nodes
               ii = ii + 1
               rp(ii,:) = rp(k,:) + rnorm(k,:)*dble(j)*s(k)   !! Moving along an FD stencil
               rnorm(ii,:)=rnorm(k,:)          !! Copy normals
@@ -78,21 +71,6 @@ contains
               npfb = npfb + 1           
            end do
         end if
-        if(jj.eq.1.or.jj.eq.2) then !! If it is an io boundary node
-           k = ii !! k is the index of the parent node
-           nb = nb + 1
-           nbio = nbio + 1
-           do j=1,nrio  !! Make 4 additional nodes   !! NEWBC
-              ii = ii + 1
-              rp(ii,:) = rp(k,:) + rnorm(k,:)*dble(j)*s(k)   !! Moving along an FD stencil
-              rnorm(ii,:)=rnorm(k,:)          !! Copy normals
-              h(ii)=h(k);s(ii)=s(k)          !! length-scales
-              node_type(ii) = -j           !! and node type
-              fd_parent(ii) = k            !! and lineage
-              npfb = npfb + 1           
-           end do
-        end if
-        
      end do
 
      write(6,*) nb,npfb     
@@ -104,8 +82,8 @@ contains
      smag = 0.5d0
      do i=1,npfb
         if(node_type(i).ge.3)then  !! only perturb interior nodes
-        dx = rand();dx = smag*(dx - 0.5d0)*1.0d0*s(i)
-        dy = rand();dy = smag*(dy - 0.5d0)*1.0d0*s(i)        
+        dx = rand();dx = smag*(dx - 0.5d0)*2.0d0*s(i)
+        dy = rand();dy = smag*(dy - 0.5d0)*2.0d0*s(i)        
 !        rp(i,:) = rp(i,:) + (/dx,dy/)
         end if
 !        write(32,*) rp(i,:)
@@ -117,22 +95,25 @@ contains
      call iteratively_shift(10)
      call iteratively_shift(10)
      call iteratively_shift(10)
-     call iteratively_shift(10)                   
+     call iteratively_shift(10)             
      call iteratively_shift(10)
      call iteratively_shift(10)
+     call iteratively_shift(10)             
      call iteratively_shift(10)
-     call iteratively_shift(10)
-     call iteratively_shift(10)   
+     call iteratively_shift(10)                                            
      write(6,*) "After iterative shifting:",nb,npfb,np
      
      !! Write new file to ../gen/IPART
      open(unit=13,file='../gen/IPART')
-     write(13,*) nb,npfb-nrw*nbw-nrio*nbio,smax,smin  !! NEWBC
+     write(13,*) nb,npfb-4*nb,smax,smin
      write(13,*) xmin,xmax,ymin,ymax
      write(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
+     ii=0
      do i=1,npfb
         if(node_type(i).ge.0) then
-           write(13,*) rp(i,1),rp(i,2),node_type(i),rnorm(i,1),rnorm(i,2),s(i)     
+           ii = ii+1
+           write(13,*) ii,rp(i,1),rp(i,2),node_type(i),rnorm(i,1),rnorm(i,2),s(i)     
+           if(node_type(i).ge.0.and.node_type(i).le.2) ii=ii+4 !! Augment global index if boundary node
         end if
      end do
      close(13)                        
@@ -148,12 +129,12 @@ contains
      !! easier for the multi-process version.
      integer(ikind),intent(in) :: kk
      integer(ikind) :: ll,i,j,k
-     real(rkind),dimension(dims) :: rij,gradkernel,dr_tmp
+     real(rkind),dimension(ithree) :: rij,gradkernel,dr_tmp
      real(rkind),dimension(:,:),allocatable :: dr
      real(rkind) :: rad,tmp,qq
      real(rkind) :: qkd_mag,ns,drmag
     
-     allocate(dr(npfb,dims))
+     allocate(dr(npfb,ithree))
  
      if(allocated(irelation)) deallocate(irelation,vrelation)
      call create_mirror_particles
@@ -174,7 +155,7 @@ contains
         !! Find shifting vector...
         !$OMP PARALLEL DO PRIVATE(k,j,rij,rad,qq,gradkernel,dr_tmp,qkd_mag)
         do i=1,npfb
-           if(node_type(i).eq.999.or.node_type(i).eq.998) then !! Fluid nodes excluding first 2 rows
+           if(node_type(i).eq.999) then
               qkd_mag = 1.0d-1*h(i)
               dr_tmp = zero
               do k=1,ij_count(i)
@@ -200,7 +181,7 @@ contains
         !! Move particles...
         !$OMP PARALLEL DO
         do i=1,npfb
-           if(node_type(i).eq.999.or.node_type(i).eq.998) then !! Fluid nodes excluding first 2 rows
+           if(node_type(i).eq.999) then
               rp(i,:) = rp(i,:) - dr(i,:)
            end if
         end do
@@ -240,8 +221,8 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      !! Reads in boundary patches
      use boundaries
      integer(ikind) i,j,ii,jj,npfb_tmp,k
-     real(rkind) :: ns,dummy,prox,rad,radmin,dx,dy,smag,dxmin
-     real(rkind),dimension(dims) :: rij
+     real(rkind) :: ns,dummy,prox,rad,radmin,dx,dy,smag
+     real(rkind),dimension(ithree) :: rij
      real(rkind),dimension(:,:),allocatable :: tmp_vec
      integer(ikind) :: shiftflag
 
@@ -249,34 +230,34 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      open(13,file='../gen/IPART')
      read(13,*) nb,npfb,dummy,smin      !! dummy is largest s(i) in domain...
      read(13,*) xmin,xmax,ymin,ymax
-     read(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U
+     read(13,*) xbcond_L,xbcond_U,ybcond_L,ybcond_U    
      !! For the purposes of shifting, ybcond=3 (no-slip) is the same as ybcond=2 (symmetry)
      
      !! Calculate some useful constants
      smax = dummy;h0 = hovs_local*dummy;sup_size = ss*h0;h2=h0*h0;h3=h2*h0
         
     
-     allocate(rp(4*npfb,dims),rnorm(4*npfb,dims),h(4*npfb),s(4*npfb));rp=0.0d0;rnorm=0.0d0
+     allocate(rp(4*npfb,ithree),rnorm(4*npfb,ithree),h(4*npfb),s(4*npfb));rp=0.0d0;rnorm=0.0d0
      allocate(node_type(4*npfb));node_type=0
      allocate(fd_parent(2*npfb));fd_parent=0
+     allocate(global_index(4*npfb));global_index=0
           
      !! Load all nodes. Build FD stencils near boundaries on the fly.
      npfb_tmp = npfb
      nb = 0;ii = 0
-     nbw=0;nbio=0
     
      do i=1,npfb_tmp
         ii = ii + 1
-        read(13,*) rp(ii,1:2),jj,rnorm(ii,1:2),dummy
+        read(13,*) global_index(ii),rp(ii,1:2),jj,rnorm(ii,1:2),dummy
         h(ii) = dummy*hovs_local
         s(ii) = dummy
         node_type(ii) = jj
-        if(jj.eq.0) then !! If it is a wall boundary node
+        if(jj.ge.0.and.jj.le.2) then !! If it is a boundary node
            k = ii !! k is the index of the parent node
            nb = nb + 1
-           nbw = nbw+1
-           do j=1,nrw  !! Make X additional nodes  !! NEWBC
+           do j=1,4  !! Make 4 additional nodes
               ii = ii + 1
+              global_index(ii) = k+j !! Global_index for near-boundary nodes
               rp(ii,:) = rp(k,:) + rnorm(k,:)*dble(j)*s(k)   !! Moving along an FD stencil
               rnorm(ii,:)=rnorm(k,:)          !! Copy normals
               h(ii)=h(k);s(ii)=s(k)          !! length-scales
@@ -285,21 +266,6 @@ write(6,*) "Shifting iteration",ll,"of ",kk
               npfb = npfb + 1           
            end do
         end if
-        if(jj.eq.1.or.jj.eq.2) then !! If it is an io boundary node
-           k = ii !! k is the index of the parent node
-           nb = nb + 1
-           nbio = nbio+1
-           do j=1,nrio  !! Make 4 additional nodes  !! NEWBC
-              ii = ii + 1
-              rp(ii,:) = rp(k,:) + rnorm(k,:)*dble(j)*s(k)   !! Moving along an FD stencil
-              rnorm(ii,:)=rnorm(k,:)          !! Copy normals
-              h(ii)=h(k);s(ii)=s(k)          !! length-scales
-              node_type(ii) = -j           !! and node type
-              fd_parent(ii) = k            !! and lineage
-              npfb = npfb + 1           
-           end do
-        end if
-        
      end do
 
      write(6,*) nb,npfb     
@@ -314,7 +280,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      integer(ikind) :: i,n,j,k
      real(rkind) :: max_x,min_x,max_y,min_y,max_s,block_size_x,block_size_y
      
-     n= npfb - nrw*nbw - nrio*nbio !!NEWBC
+     n= npfb - 4*nb
      open(212,file='../../IPART')
      write(212,*) nb,n*nprocsZ,smax,smin
      write(212,*) xmin,xmax,ymin,ymax
@@ -358,10 +324,10 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      
      !! Write out slice  
      do i=1,n
-        write(212,*) x(i),y(i),nt(i),xn(i),yn(i),ds(i)
+        write(212,*) gi(i),x(i),y(i),nt(i),xn(i),yn(i),ds(i)
      end do
      
-     deallocate(x,y,xn,yn,ds,nt)
+     deallocate(x,y,xn,yn,ds,nt,gi)
  
      close(212)
      
@@ -374,9 +340,9 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      integer(ikind) :: i,n,j
      
      !! Number of nodes without FD stencils
-     n = npfb - nrw*nbw - nrio*nbio  !! NEWBC
+     n = npfb - 4*nb
   
-     allocate(x(n),y(n),xn(n),yn(n),ds(n),nt(n))
+     allocate(x(n),y(n),xn(n),yn(n),ds(n),nt(n),gi(n))
      
      j=0
      do i=1,npfb      !! Loop over all nodes
@@ -388,6 +354,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
            xn(j) = rnorm(i,1);yn(j) = rnorm(i,2)
            ds(j) = s(i)
            nt(j) = node_type(i)
+           gi(j) = global_index(i)
         end if
      end do
      
@@ -406,7 +373,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      logical :: keepgoing       
      
      !! How many particles (total) need sorting
-     nptmp = npfb- nrw*nbw - nrio*nbio  !! NEWBC
+     nptmp = npfb-4*nb
      
      !! allocation of index limits
      allocate(nband(nprocsX),effective_nband(nprocsX))
@@ -428,10 +395,8 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         
         effective_nband(kk) = 0
         do i=nl_ini,nl_end
-           if(nt(i).eq.0) then
-              effective_nband(kk) = effective_nband(kk) + nrw+1 !! NEWBC
-           else if(nt(i).eq.1.or.nt(i).eq.2) then
-              effective_nband(kk) = effective_nband(kk) + nrio+1 !! NEWBC           
+           if(nt(i).ge.0.and.nt(i).le.2) then
+              effective_nband(kk) = effective_nband(kk) + 5
            else
               effective_nband(kk) = effective_nband(kk) + 1              
            end if
@@ -461,10 +426,8 @@ write(6,*) "Shifting iteration",ll,"of ",kk
             
            effective_nband(kk) = 0
            do i=nl_ini,nl_end
-              if(nt(i).eq.0) then
-                 effective_nband(kk) = effective_nband(kk) + nrw+1 !! NEWBC
-              else if(nt(i).eq.1.or.nt(i).eq.2) then                 
-                 effective_nband(kk) = effective_nband(kk) + nrio+1 !! NEWBC
+              if(nt(i).ge.0.and.nt(i).le.2) then
+                 effective_nband(kk) = effective_nband(kk) + 5
               else
                  effective_nband(kk) = effective_nband(kk) + 1              
               end if
@@ -472,7 +435,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         
         end do     
      
-        if(.true.)then
+        if(.false.)then
            !! Evaluate mean and variance:
            meanband = 0
            varband = 0
@@ -502,9 +465,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         write(6,*) kk,nband(kk),effective_nband(kk)
         j=j+nband(kk)
      end do
-     write(6,*) "checking sums",j,npfb- nrw*nbw - nrio*nbio !!NEWBC
-     
-     write(6,*) "Number of bound nodes",nb
+     write(6,*) "checking sums",j,npfb-4*nb
 
 !     stop            
       
@@ -516,7 +477,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      !! load balancing.
      integer(ikind),intent(in) :: nband_start,nband_size
      integer(ikind) :: i,kk,nband_mean,nl_ini,nl_end,ii,ll,j
-     integer(ikind) :: nshift,meanblock,varblock
+     integer(ikind) :: nshift
      logical :: keepgoing  
          
     
@@ -540,10 +501,8 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         
         effective_nblock(kk) = 0
         do i=nl_ini,nl_end
-           if(nt(i).eq.0) then
-              effective_nblock(kk) = effective_nblock(kk) + nrw+1 !! NEWBC
-           else if(nt(i).eq.1.or.nt(i).eq.2) then
-              effective_nblock(kk) = effective_nblock(kk) + nrio+1 !! NEWBC           
+           if(nt(i).ge.0.and.nt(i).le.2) then
+              effective_nblock(kk) = effective_nblock(kk) + 5
            else
               effective_nblock(kk) = effective_nblock(kk) + 1              
            end if
@@ -558,7 +517,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         !! Exchange nodes between blocks        
         do kk=1,nprocsY-1
            !! Amount to exchange between blocks
-           ll = 0.1d0*(effective_nblock(kk+1)-effective_nblock(kk))
+           ll = coef_diffusion*(effective_nblock(kk+1)-effective_nblock(kk))
            nblock(kk) = nblock(kk) + ll
            nblock(kk+1) = nblock(kk+1) - ll
         end do
@@ -577,38 +536,17 @@ write(6,*) "Shifting iteration",ll,"of ",kk
             
            effective_nblock(kk) = 0
            do i=nl_ini,nl_end
-              if(nt(i).eq.0) then
-                 effective_nblock(kk) = effective_nblock(kk) + nrw+1 !! NEWBC
-              else if(nt(i).eq.1.or.nt(i).eq.2) then
-                 effective_nblock(kk) = effective_nblock(kk) + nrio+1 !! NEWBC           
+              if(nt(i).ge.0.and.nt(i).le.2) then
+                 effective_nblock(kk) = effective_nblock(kk) + 5
               else
                  effective_nblock(kk) = effective_nblock(kk) + 1              
-              end if           
+              end if
            end do
         
         end do     
         
-
-        if(.true.)then
-           !! Evaluate mean and variance:
-           meanblock = 0
-           varblock = 0
-           do kk=1,nprocsY
-              meanblock = meanblock + effective_nblock(kk)
-           end do
-           meanblock = floor(dble(meanblock)/dble(nprocsY))
-           do kk=1,nprocsY
-              varblock = varblock + (effective_nblock(kk)-meanblock)**2
-           end do
-           varblock = floor(sqrt(dble(varblock)/dble(nprocsY)))
-        
-           write(6,*) "Iteration number, mean and variance:",j,meanblock,varblock
-        end if        
-        
-        
         j=j+1
-        if(j.gt.maxiters_diffusion) keepgoing=.false.  
-        if(varblock.le.10) keepgoing=.false.   
+        if(j.gt.maxiters_diffusion) keepgoing=.false.     
 
      
      end do
@@ -639,13 +577,13 @@ write(6,*) "Shifting iteration",ll,"of ",kk
    
      !! First sort nodes in X
      write(6,*) "About to quicksort"
-     call quicksort(x,1,npfb- nrw*nbw - nrio*nbio)  !! NEWBC
+     call quicksort(x,1,npfb-4*nb)
      write(6,*) "Quicksorted nodes ordered increasing x"
      
      
     
      !! How many particles (total) need sorting
-     nptmp = npfb- nrw*nbw - nrio*nbio  !! NEWBC
+     nptmp = npfb-4*nb
     
      !! Find band sizes, and adjust by 1d diffusion
      call find_band_sizes
@@ -712,7 +650,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
   subroutine shift_indices(istart,iend,nswap)
      integer(ikind), intent(in) :: istart,iend,nswap 
      real(rkind),dimension(:),allocatable :: x_tmp,y_tmp,xn_tmp,yn_tmp,ds_tmp
-     integer(ikind),dimension(:),allocatable :: nt_tmp
+     integer(ikind),dimension(:),allocatable :: nt_tmp,gi_tmp
      integer(ikind) :: band_size,shift_size,i_old,i_new,i
      
      !! Sizes
@@ -722,7 +660,7 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      
      !! Make some space
      allocate(x_tmp(nswap),y_tmp(nswap),xn_tmp(nswap),yn_tmp(nswap))
-     allocate(ds_tmp(nswap),nt_tmp(nswap))
+     allocate(ds_tmp(nswap),nt_tmp(nswap),gi_tmp(nswap))
      
      write(6,*) "shift indices", istart,iend,nswap
      !! Temporary store of the final nswap elements
@@ -731,7 +669,8 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      xn_tmp(1:nswap) = xn(iend-nswap+1:iend)
      yn_tmp(1:nswap) = yn(iend-nswap+1:iend)
      ds_tmp(1:nswap) = ds(iend-nswap+1:iend)
-     nt_tmp(1:nswap) = nt(iend-nswap+1:iend)       
+     nt_tmp(1:nswap) = nt(iend-nswap+1:iend)
+     gi_tmp(1:nswap) = gi(iend-nswap+1:iend)                   
      
      
      !! Shift
@@ -746,7 +685,8 @@ write(6,*) "Shifting iteration",ll,"of ",kk
         xn(i_new) = xn(i_old)
         yn(i_new) = yn(i_old)
         ds(i_new) = ds(i_old)
-        nt(i_new) = nt(i_old)                                                
+        nt(i_new) = nt(i_old)    
+        gi(i_new) = gi(i_old)                                            
      end do
      
      !! Copy temp back to start of band
@@ -755,9 +695,10 @@ write(6,*) "Shifting iteration",ll,"of ",kk
      xn(istart:istart+nswap-1) = xn_tmp(1:nswap)
      yn(istart:istart+nswap-1) = yn_tmp(1:nswap)
      ds(istart:istart+nswap-1) = ds_tmp(1:nswap)
-     nt(istart:istart+nswap-1) = nt_tmp(1:nswap)                         
+     nt(istart:istart+nswap-1) = nt_tmp(1:nswap)
+     gi(istart:istart+nswap-1) = gi_tmp(1:nswap)                                                       
      
-     deallocate(x_tmp,y_tmp,xn_tmp,yn_tmp,ds_tmp,nt_tmp)
+     deallocate(x_tmp,y_tmp,xn_tmp,yn_tmp,ds_tmp,nt_tmp,gi_tmp)
      
      return
   end subroutine shift_indices
@@ -799,7 +740,8 @@ end subroutine quicksort
      tmp = xn(j);xn(j)=xn(i);xn(i)=tmp
      tmp = yn(j);yn(j)=yn(i);yn(i)=tmp
      tmp = ds(j);ds(j)=ds(i);ds(i)=tmp
-     itmp = nt(j);nt(j)=nt(i);nt(i)=itmp                    
+     itmp = nt(j);nt(j)=nt(i);nt(i)=itmp  
+     itmp = gi(j);gi(j)=gi(i);gi(i)=itmp                  
      return
   end subroutine swap_nodes
 !! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -840,7 +782,8 @@ end subroutine quicksorty
      tmp = xn(j);xn(j)=xn(i);xn(i)=tmp
      tmp = yn(j);yn(j)=yn(i);yn(i)=tmp
      tmp = ds(j);ds(j)=ds(i);ds(i)=tmp
-     itmp = nt(j);nt(j)=nt(i);nt(i)=itmp                        
+     itmp = nt(j);nt(j)=nt(i);nt(i)=itmp    
+     itmp = gi(j);gi(j)=gi(i);gi(i)=itmp                    
      return
   end subroutine swap_nodesy
 !! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
